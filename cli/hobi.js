@@ -3,6 +3,7 @@ const fs = require('fs')
 const {
   tambahHobi,
   hapusHobi,
+  editHobi,
   cariHobi,
   urutkanHobi,
   eksporHobi,
@@ -71,9 +72,54 @@ async function main() {
       console.log('Hobi berhasil dihapus')
       break
 
-    case 'cari':
-      cariHobi(hobi, argumen).forEach(h => console.log(`- ${h}`))
-      break
+    case 'edit': {
+  if (sisa.length < 2) {
+    throw new Error(
+      'Gunakan: node cli/hobi.js edit <nama-lama> <nama-baru>'
+    )
+  }
+
+  const namaLama = sisa[0]
+  const namaBaru = sisa.slice(1).join(' ')
+
+  tulis(judul, editHobi(hobi, namaLama, namaBaru))
+  console.log('Hobi berhasil diperbarui')
+  break
+}
+case 'cari': {
+  const opsi = sisa.filter(arg => arg.startsWith('--'))
+  const kata = sisa.filter(arg => !arg.startsWith('--')).join(' ').trim()
+
+  const opsiValid = ['--ignore-case', '--exact']
+
+  if (opsi.some(o => !opsiValid.includes(o))) {
+    throw new Error('Opsi pencarian tidak dikenal')
+  }
+
+  if (opsi.length > 1) {
+    throw new Error('Gunakan hanya satu opsi pencarian')
+  }
+
+  if (!kata) {
+    throw new Error('Teks pencarian tidak boleh kosong')
+  }
+
+  let hasil
+
+  if (opsi.includes('--exact')) {
+    hasil = hobi.filter(h => h === kata)
+  } else if (opsi.includes('--ignore-case')) {
+    hasil = hobi.filter(
+      h => h.toLowerCase().includes(kata.toLowerCase())
+    )
+  } else {
+    hasil = cariHobi(hobi, kata)
+  }
+
+  hasil.forEach(h => console.log(`- ${h}`))
+  break
+}
+
 
     case 'daftar':
       hobi.forEach(h => console.log(`- ${h}`))
