@@ -112,3 +112,24 @@ test('CLI impor menolak hobi yang bukan teks', (t) => {
   assert.match(hasil.stderr, /setiap hobi harus berupa teks/)
   assert.equal(fs.readFileSync(fileHobi, 'utf8'), isiAwal)
 })
+
+test('CLI mengembalikan kode 1 jika hobi.txt tidak ditemukan', (t) => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'tes-hobi-'))
+
+  t.after(() => {
+    fs.rmSync(folder, { recursive: true, force: true })
+  })
+
+  const hasil = jalankan(folder, 'statistik')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /hobi.txt tidak ditemukan/)
+})
+
+test('CLI impor mengembalikan kode 1 jika file JSON tidak diberikan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'impor')
+
+  assert.equal(hasil.status, 1)
+assert.match(hasil.stderr, /Gunakan: node cli\/hobi\.js impor/)
+})
