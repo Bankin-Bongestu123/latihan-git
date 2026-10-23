@@ -31,6 +31,38 @@ function hapusHobi(daftar, nama) {
   return sisa
 }
 
+
+function editHobi(daftar, namaLama, namaBaru) {
+  const lama = rapikan(namaLama)
+  const baru = rapikan(namaBaru)
+
+  if (!lama) {
+    throw new Error('Nama hobi lama tidak boleh kosong')
+  }
+
+  if (!baru) {
+    throw new Error('Nama hobi tidak boleh kosong')
+  }
+
+  const indeks = daftar.findIndex(
+    h => h.toLowerCase() === lama.toLowerCase()
+  )
+
+  if (indeks === -1) {
+    throw new Error('Hobi tidak ditemukan')
+  }
+
+  const duplikat = daftar.some(
+    (h, i) => i !== indeks && h.toLowerCase() === baru.toLowerCase()
+  )
+
+  if (duplikat) {
+    throw new Error('Hobi sudah ada')
+  }
+
+  return daftar.map((h, i) => i === indeks ? baru : h)
+}
+
 function cariHobi(daftar, teks) {
   const kunci = rapikan(teks).toLowerCase()
 
@@ -77,6 +109,7 @@ function gabungkanHobi(daftar, tambahan) {
 module.exports = {
   tambahHobi,
   hapusHobi,
+  editHobi,
   cariHobi,
   urutkanHobi,
   eksporHobi,

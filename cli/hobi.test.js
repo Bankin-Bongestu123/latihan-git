@@ -224,3 +224,84 @@ test('CLI hapus-semua menghasilkan kode error jika hobi.txt tidak ada', (t) => {
   assert.equal(hasil.status, 1)
   assert.match(hasil.stderr, /File hobi.txt tidak ditemukan/)
 })
+
+
+test('CLI edit mengganti nama hobi yang ditemukan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'edit', 'Ngoding', 'Belajar Go')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil diperbarui/)
+  assert.equal(
+    fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'),
+    'Daftar Hobi\n- Belajar Go\n- Membaca\n'
+  )
+})
+
+test('CLI edit tidak membedakan huruf besar dan kecil pada nama lama', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'edit', 'NGODING', 'Belajar Go')
+
+  assert.equal(hasil.status, 0)
+  assert.match(
+    fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'),
+    /- Belajar Go/
+  )
+})
+
+test('CLI edit gagal jika hobi lama tidak ditemukan', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+  const hasil = jalankan(folder, 'edit', 'Memancing', 'Belajar Go')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Hobi tidak ditemukan/)
+  assert.equal(fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'), awal)
+})
+
+test('CLI edit menolak nama hobi baru yang kosong', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+  const hasil = jalankan(folder, 'edit', 'Ngoding', '   ')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Nama hobi tidak boleh kosong/)
+  assert.equal(fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'), awal)
+})
+
+test('CLI edit menolak nama baru yang duplikat', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+  const hasil = jalankan(folder, 'edit', 'Ngoding', 'Membaca')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Hobi sudah ada/)
+  assert.equal(fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'), awal)
+})
+
+test('CLI cari --ignore-case mencari tanpa membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', 'NGODING', '--ignore-case')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /- Ngoding/)
+})
+
+test('CLI cari --exact hanya menampilkan nama yang sama persis', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', 'Ngoding', '--exact')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /- Ngoding/)
+  assert.doesNotMatch(hasil.stdout, /- Membaca/)
+})
+
+test('CLI cari menolak opsi yang tidak dikenal', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+  const hasil = jalankan(folder, 'cari', 'Go', '--unknown')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Opsi pencarian tidak dikenal/)
+  assert.equal(fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'), awal)
+})
