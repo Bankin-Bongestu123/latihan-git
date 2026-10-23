@@ -22,6 +22,23 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js statistik` | Menampilkan total dan jumlah hobi unik |
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
 
+
+### Kategori Hobi
+
+Memberikan kategori pada hobi yang sudah terdaftar:
+
+```bash
+node cli/hobi.js kategori "Ngoding" "Teknologi"
+```
+
+Menampilkan semua hobi berdasarkan kategori:
+
+```bash
+node cli/hobi.js daftar-kategori "Teknologi"
+```
+
+Nama hobi dan kategori dicocokkan tanpa membedakan huruf besar dan kecil. Data kategori disimpan secara terpisah di `kategori.json`.
+
 ## Format file impor
 
 File JSON harus memiliki properti `hobi` berupa array string.
