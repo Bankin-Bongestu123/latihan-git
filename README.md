@@ -15,6 +15,7 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js daftar` | Menampilkan semua hobi |
 | `node cli/hobi.js tambah "Main Gitar"` | Menambahkan hobi baru |
 | `node cli/hobi.js hapus "Main Gitar"` | Menghapus hobi |
+| `node cli/hobi.js hapus-semua` | Menghapus semua hobi setelah konfirmasi |
 | `node cli/hobi.js cari "Main"` | Mencari hobi |
 | `node cli/hobi.js urut` | Mengurutkan hobi |
 | `node cli/hobi.js ekspor` | Menampilkan daftar hobi dalam format JSON |

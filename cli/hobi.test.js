@@ -133,3 +133,94 @@ test('CLI impor mengembalikan kode 1 jika file JSON tidak diberikan', (t) => {
   assert.equal(hasil.status, 1)
 assert.match(hasil.stderr, /Gunakan: node cli\/hobi\.js impor/)
 })
+
+
+test('CLI hapus-semua menghapus seluruh hobi setelah konfirmasi y', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = spawnSync(
+    process.execPath,
+    [CLI, 'hapus-semua'],
+    {
+      cwd: folder,
+      encoding: 'utf8',
+      input: 'y\n'
+    }
+  )
+
+  const isiHobi = fs.readFileSync(
+    path.join(folder, 'hobi.txt'),
+    'utf8'
+  )
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil dihapus semua/)
+  assert.equal(isiHobi, 'Daftar Hobi\n')
+})
+
+test('CLI hapus-semua membatalkan penghapusan setelah konfirmasi n', (t) => {
+  const folder = siapkanFolder(t)
+  const fileHobi = path.join(folder, 'hobi.txt')
+  const isiAwal = fs.readFileSync(fileHobi, 'utf8')
+
+  const hasil = spawnSync(
+    process.execPath,
+    [CLI, 'hapus-semua'],
+    {
+      cwd: folder,
+      encoding: 'utf8',
+      input: 'n\n'
+    }
+  )
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Penghapusan dibatalkan/)
+  assert.equal(fs.readFileSync(fileHobi, 'utf8'), isiAwal)
+})
+
+
+test('CLI hapus-semua menerima konfirmasi huruf besar Y', (t) => {
+  const folder = siapkanFolder(t)
+
+  const hasil = spawnSync(
+    process.execPath,
+    [CLI, 'hapus-semua'],
+    { cwd: folder, encoding: 'utf8', input: 'Y\n' }
+  )
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil dihapus semua/)
+  assert.equal(
+    fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'),
+    'Daftar Hobi\n'
+  )
+})
+
+test('CLI hapus-semua membatalkan jawaban selain y dan n', (t) => {
+  const folder = siapkanFolder(t)
+  const fileHobi = path.join(folder, 'hobi.txt')
+  const isiAwal = fs.readFileSync(fileHobi, 'utf8')
+
+  const hasil = spawnSync(
+    process.execPath,
+    [CLI, 'hapus-semua'],
+    { cwd: folder, encoding: 'utf8', input: 'mungkin\n' }
+  )
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Penghapusan dibatalkan/)
+  assert.equal(fs.readFileSync(fileHobi, 'utf8'), isiAwal)
+})
+
+test('CLI hapus-semua menghasilkan kode error jika hobi.txt tidak ada', (t) => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'tes-hobi-'))
+  t.after(() => fs.rmSync(folder, { recursive: true, force: true }))
+
+  const hasil = spawnSync(
+    process.execPath,
+    [CLI, 'hapus-semua'],
+    { cwd: folder, encoding: 'utf8', input: 'y\n' }
+  )
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /File hobi.txt tidak ditemukan/)
+})

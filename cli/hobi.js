@@ -1,4 +1,4 @@
-
+const readline = require('readline')
 const fs = require('fs')
 const {
   tambahHobi,
@@ -42,10 +42,25 @@ function gagal(pesan) {
   process.exit(1)
 }
 
-try {
-  const { judul, hobi } = baca()
+function konfirmasiHapusSemua() {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
 
-  switch (perintah) {
+    rl.question('Yakin ingin menghapus semua hobi? (y/n): ', (jawaban) => {
+      rl.close()
+      resolve(jawaban.trim().toLowerCase())
+    })
+  })
+}
+
+async function main() {
+  try {
+    const { judul, hobi } = baca()
+
+    switch (perintah) {
     case 'tambah':
       tulis(judul, tambahHobi(hobi, argumen))
       console.log('Hobi berhasil ditambahkan')
@@ -72,6 +87,19 @@ try {
     case 'ekspor':
       console.log(eksporHobi(judul, hobi))
       break
+
+        case 'hapus-semua': {
+      const jawaban = await konfirmasiHapusSemua()
+
+      if (jawaban !== 'y') {
+        console.log('Penghapusan dibatalkan')
+        break
+      }
+
+      tulis(judul, [])
+      console.log('Hobi berhasil dihapus semua')
+      break
+    }
 
     case 'statistik': {
       const statistik = hitungStatistik(hobi)
@@ -110,9 +138,11 @@ try {
 
     default:
       gagal(
-        'Penggunaan: node cli/hobi.js <tambah|hapus|cari|daftar|urut|ekspor|statistik|impor> [teks]'
-      )
+'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|cari|daftar|urut|ekspor|statistik|impor> [teks]'      )
+      }
+  } catch (e) {
+    gagal(e.message)
   }
-} catch (e) {
-  gagal(e.message)
 }
+
+main()
