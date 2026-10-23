@@ -38,6 +38,29 @@ function tulis(judul, hobi) {
   fs.writeFileSync(FILE, isi, 'utf8')
 }
 
+const FILE_KATEGORI = 'kategori.json'
+
+function bacaKategori() {
+  if (!fs.existsSync(FILE_KATEGORI)) {
+    return {}
+  }
+
+  return JSON.parse(fs.readFileSync(FILE_KATEGORI, 'utf8'))
+}
+
+function tulisKategori(data) {
+  fs.writeFileSync(
+    FILE_KATEGORI,
+    JSON.stringify(data, null, 2) + '\n',
+    'utf8'
+  )
+}
+
+function cariNamaHobi(daftar, nama) {
+  const kunci = nama.trim().toLowerCase()
+  return daftar.find(h => h.toLowerCase() === kunci)
+}
+
 function gagal(pesan) {
   console.error(pesan)
   process.exit(1)
@@ -62,6 +85,60 @@ async function main() {
     const { judul, hobi } = baca()
 
     switch (perintah) {
+      
+    case 'kategori': {
+      if (sisa.length < 2) {
+        throw new Error(
+          'Gunakan: node cli/hobi.js kategori <nama-hobi> <nama-kategori>'
+        )
+      }
+
+      const namaHobi = sisa[0].trim()
+      const namaKategori = sisa.slice(1).join(' ').trim()
+
+      if (!namaKategori) {
+        throw new Error('Nama kategori tidak boleh kosong')
+      }
+
+      const hobiDitemukan = cariNamaHobi(hobi, namaHobi)
+
+      if (!hobiDitemukan) {
+        throw new Error('Hobi tidak ditemukan')
+      }
+
+      const kategori = bacaKategori()
+      kategori[hobiDitemukan] = namaKategori
+      tulisKategori(kategori)
+
+      console.log(`Kategori hobi berhasil diperbarui: ${hobiDitemukan} - ${namaKategori}`)
+      break
+    }
+
+    case 'daftar-kategori': {
+      const namaKategori = sisa.join(' ').trim()
+
+      if (!namaKategori) {
+        throw new Error(
+          'Gunakan: node cli/hobi.js daftar-kategori <nama-kategori>'
+        )
+      }
+
+      const kategori = bacaKategori()
+
+      const hasil = hobi.filter(nama => {
+        const kategoriHobi = kategori[nama]
+        return kategoriHobi &&
+          kategoriHobi.toLowerCase() === namaKategori.toLowerCase()
+      })
+
+      if (hasil.length === 0) {
+        throw new Error('Belum ada hobi dalam kategori tersebut')
+      }
+
+      hasil.forEach(nama => console.log(`- ${nama}`))
+      break
+    }
+
     case 'tambah':
       tulis(judul, tambahHobi(hobi, argumen))
       console.log('Hobi berhasil ditambahkan')
@@ -184,7 +261,7 @@ case 'cari': {
 
     default:
       gagal(
-'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|cari|daftar|urut|ekspor|statistik|impor> [teks]'      )
+'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|daftar-kategori|cari|daftar|urut|ekspor|statistik|impor> [teks]'     )
       }
   } catch (e) {
     gagal(e.message)

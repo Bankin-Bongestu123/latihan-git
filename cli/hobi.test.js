@@ -305,3 +305,83 @@ test('CLI cari menolak opsi yang tidak dikenal', (t) => {
   assert.match(hasil.stderr, /Opsi pencarian tidak dikenal/)
   assert.equal(fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8'), awal)
 })
+
+
+test('kategori: memberi kategori pada hobi yang ada', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /berhasil/i)
+
+  const daftar = jalankan(folder, 'daftar-kategori', 'Teknologi')
+  assert.equal(daftar.status, 0)
+  assert.match(daftar.stdout, /Ngoding/)
+})
+
+test('kategori: nama hobi tidak membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'kategori', 'nGoDiNg', 'Teknologi')
+
+  assert.equal(hasil.status, 0)
+
+  const daftar = jalankan(folder, 'daftar-kategori', 'teknologi')
+  assert.match(daftar.stdout, /Ngoding/)
+})
+
+test('kategori: menolak hobi yang tidak ditemukan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'kategori', 'Bersepeda', 'Olahraga')
+
+  assert.notEqual(hasil.status, 0)
+  assert.match(hasil.stderr, /tidak ditemukan/i)
+})
+
+test('kategori: menolak kategori kosong', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'kategori', 'Ngoding', '   ')
+
+  assert.notEqual(hasil.status, 0)
+  assert.match(hasil.stderr, /kategori.*kosong/i)
+})
+
+test('daftar-kategori: menampilkan semua hobi dalam kategori', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'kategori', 'Membaca', 'Santai')
+
+  const hasil = jalankan(folder, 'daftar-kategori', 'Santai')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Membaca/)
+  assert.doesNotMatch(hasil.stdout, /Ngoding/)
+})
+
+test('daftar-kategori: pencarian kategori tidak membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  const hasil = jalankan(folder, 'daftar-kategori', 'TEKNOLOGI')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Ngoding/)
+})
+
+test('daftar-kategori: memberi pesan jika kategori belum memiliki hobi', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'daftar-kategori', 'Olahraga')
+
+  assert.notEqual(hasil.status, 0)
+  assert.match(hasil.stderr, /tidak ditemukan|belum ada/i)
+})
+
+test('kategori: input hobi tidak valid tidak mengubah daftar hobi', (t) => {
+  const folder = siapkanFolder(t)
+  const sebelum = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+
+  jalankan(folder, 'kategori', 'Bersepeda', 'Olahraga')
+
+  const sesudah = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
+  assert.equal(sesudah, sebelum)
+})
