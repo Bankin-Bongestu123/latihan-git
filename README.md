@@ -18,7 +18,6 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js hapus-semua` | Menghapus semua hobi setelah konfirmasi |
 | `node cli/hobi.js cari "Main"` | Mencari hobi |
 | `node cli/hobi.js urut` | Mengurutkan hobi |
-| `node cli/hobi.js ekspor` | Menampilkan daftar hobi dalam format JSON |
 | `node cli/hobi.js statistik` | Menampilkan total dan jumlah hobi unik |
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
 | `node cli/hobi.js edit "Lama" "Baru"` | Mengganti nama hobi |
@@ -29,6 +28,8 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js minat "Ngoding" 5` | Memberi tingkat minat 1 sampai 5 |
 | `node cli/hobi.js urut-minat` | Mengurutkan hobi dari minat tertinggi |
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
+| `node cli/hobi.js ekspor [file.json] [--paksa]` | Menampilkan hobi sebagai JSON, atau menyimpannya ke file |
+
 
 
 ### Kategori Hobi
