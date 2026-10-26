@@ -1,5 +1,5 @@
 # latihan-git
-
+[![Test](https://github.com/Bankin-Bongestu123/latihan-git/actions/workflows/test.yml/badge.svg)](https://github.com/Bankin-Bongestu123/latihan-git/actions/workflows/test.yml)
 CLI sederhana untuk mengelola daftar hobi menggunakan Node.js tanpa dependensi eksternal.
 
 ## Persiapan
