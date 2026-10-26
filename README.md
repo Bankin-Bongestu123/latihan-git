@@ -37,6 +37,12 @@ Menampilkan semua hobi berdasarkan kategori:
 node cli/hobi.js daftar-kategori "Teknologi"
 ```
 
+Menghapus kategori dari sebuah hobi (hobinya tetap ada):
+
+```bash
+node cli/hobi.js hapus-kategori "Ngoding"
+```
+
 Nama hobi dan kategori dicocokkan tanpa membedakan huruf besar dan kecil. Data kategori disimpan secara terpisah di `kategori.json`.
 
 ### Tingkat minat
