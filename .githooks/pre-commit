@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "pre-commit: memeriksa whitespace..."
+git diff --cached --check || { echo "Ada masalah whitespace, commit dibatalkan."; exit 1; }
+echo "pre-commit: menjalankan test..."
+npm test || { echo "Test gagal, commit dibatalkan."; exit 1; }
