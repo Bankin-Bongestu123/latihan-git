@@ -475,3 +475,93 @@ test('semua-kategori: tidak mengubah hobi.txt dan kategori.json', (t) => {
   assert.equal(fs.readFileSync(fileHobi, 'utf8'), hobiSebelum)
   assert.equal(fs.readFileSync(fileKategori, 'utf8'), kategoriSebelum)
 })
+
+test('minat: memberi tingkat minat pada hobi yang ada', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'minat', 'Ngoding', '5')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /berhasil/i)
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(folder, 'minat.json'), 'utf8')),
+    { Ngoding: 5 }
+  )
+})
+
+test('minat: nama hobi tidak membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'minat', 'nGoDiNg', '4')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(folder, 'minat.json'), 'utf8')),
+    { Ngoding: 4 }
+  )
+})
+
+test('minat: memperbarui tingkat minat yang sudah ada', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'minat', 'Ngoding', '2')
+  const hasil = jalankan(folder, 'minat', 'Ngoding', '5')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(folder, 'minat.json'), 'utf8')),
+    { Ngoding: 5 }
+  )
+})
+
+test('minat: menolak hobi yang tidak ditemukan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'minat', 'Bersepeda', '3')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /tidak ditemukan/i)
+  assert.equal(fs.existsSync(path.join(folder, 'minat.json')), false)
+})
+
+for (const nilai of ['0', '6', 'abc', '3.5', '-1']) {
+  test(`minat: menolak nilai tidak valid "${nilai}"`, (t) => {
+    const folder = siapkanFolder(t)
+    const hasil = jalankan(folder, 'minat', 'Ngoding', nilai)
+
+    assert.equal(hasil.status, 1)
+    assert.match(hasil.stderr, /1 sampai 5/)
+    assert.equal(fs.existsSync(path.join(folder, 'minat.json')), false)
+  })
+}
+
+test('urut-minat: mengurutkan dari minat tertinggi', (t) => {
+  const folder = siapkanFolder(t)
+  isiHobi(folder, 'Ngoding', 'Membaca', 'Berenang')
+  jalankan(folder, 'minat', 'Ngoding', '2')
+  jalankan(folder, 'minat', 'Membaca', '5')
+
+  const hasil = jalankan(folder, 'urut-minat')
+  const keluaran = hasil.stdout
+
+  assert.equal(hasil.status, 0)
+  assert.ok(keluaran.indexOf('Membaca') < keluaran.indexOf('Ngoding'))
+  assert.ok(keluaran.indexOf('Ngoding') < keluaran.indexOf('Berenang'))
+})
+
+test('urut-minat: hobi tanpa minat ditandai dan berada di akhir', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'minat', 'Ngoding', '3')
+
+  const hasil = jalankan(folder, 'urut-minat')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Ngoding \(minat: 3\)/)
+  assert.match(hasil.stdout, /Membaca \(belum ada minat\)/)
+})
+
+test('urut-minat: gagal jika belum ada hobi', (t) => {
+  const folder = siapkanFolder(t)
+  isiHobi(folder)
+
+  const hasil = jalankan(folder, 'urut-minat')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Belum ada hobi/)
+})
