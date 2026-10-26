@@ -22,6 +22,10 @@ const {
 const { cariNamaHobi } = require('./bantu')
 
 const PERINTAH = {
+  tambah: require('./perintah/tambah'),
+  hapus: require('./perintah/hapus'),
+  edit: require('./perintah/edit'),
+  urut: require('./perintah/urut'),
   daftar: require('./perintah/daftar'),
   statistik: require('./perintah/statistik'),
   impor: require('./perintah/impor')
