@@ -56,6 +56,24 @@ function tulisKategori(data) {
   )
 }
 
+const FILE_MINAT = 'minat.json'
+
+function bacaMinat() {
+  if (!fs.existsSync(FILE_MINAT)) {
+    return {}
+  }
+
+  return JSON.parse(fs.readFileSync(FILE_MINAT, 'utf8'))
+}
+
+function tulisMinat(data) {
+  fs.writeFileSync(
+    FILE_MINAT,
+    JSON.stringify(data, null, 2) + '\n',
+    'utf8'
+  )
+}
+
 function cariNamaHobi(daftar, nama) {
   const kunci = nama.trim().toLowerCase()
   return daftar.find(h => h.toLowerCase() === kunci)
@@ -195,6 +213,59 @@ async function main() {
       break
     }
 
+        case 'minat': {
+      if (sisa.length < 2) {
+        throw new Error(
+          'Gunakan: node cli/hobi.js minat <nama-hobi> <1-5>'
+        )
+      }
+
+      const nilaiTeks = sisa[sisa.length - 1].trim()
+      const namaHobi = sisa.slice(0, -1).join(' ').trim()
+
+      if (!/^[1-5]$/.test(nilaiTeks)) {
+        throw new Error('Tingkat minat harus angka 1 sampai 5')
+      }
+
+      const hobiDitemukan = cariNamaHobi(hobi, namaHobi)
+
+      if (!hobiDitemukan) {
+        throw new Error('Hobi tidak ditemukan')
+      }
+
+      const minat = bacaMinat()
+      minat[hobiDitemukan] = Number(nilaiTeks)
+      tulisMinat(minat)
+
+      console.log(`Minat hobi berhasil diperbarui: ${hobiDitemukan} - ${nilaiTeks}`)
+      break
+    }
+
+    case 'urut-minat': {
+      if (hobi.length === 0) {
+        throw new Error('Belum ada hobi')
+      }
+
+      const minat = bacaMinat()
+
+      hobi
+        .slice()
+        .sort((a, b) => {
+          const selisih = (minat[b] || 0) - (minat[a] || 0)
+          return selisih !== 0
+            ? selisih
+            : a.localeCompare(b, 'id', { sensitivity: 'base' })
+        })
+        .forEach(nama => {
+          console.log(
+            minat[nama]
+              ? `- ${nama} (minat: ${minat[nama]})`
+              : `- ${nama} (belum ada minat)`
+          )
+        })
+      break
+    }
+
     case 'tambah':
       tulis(judul, tambahHobi(hobi, argumen))
       console.log('Hobi berhasil ditambahkan')
@@ -317,7 +388,7 @@ case 'cari': {
 
     default:
       gagal(
-'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|ekspor|statistik|impor> [teks]'     )
+'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor> [teks]'     )
       }
   } catch (e) {
     gagal(e.message)
