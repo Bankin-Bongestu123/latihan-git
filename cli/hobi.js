@@ -268,4 +268,18 @@ case 'cari': {
   }
 }
 
+function hapusKategori(daftarHobi, nama) {
+  const hobi = daftarHobi.find(
+    (h) => h.nama.toLowerCase() === nama.trim().toLowerCase()
+  );
+  if (!hobi) {
+    throw new Error(`Hobi "${nama}" tidak ditemukan.`);
+  }
+  if (!hobi.kategori) {
+    throw new Error(`Hobi "${hobi.nama}" belum memiliki kategori.`);
+  }
+  hobi.kategori = "";
+  return hobi;
+}
+
 main()
