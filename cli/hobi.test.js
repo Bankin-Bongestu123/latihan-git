@@ -565,3 +565,73 @@ test('urut-minat: gagal jika belum ada hobi', (t) => {
   assert.equal(hasil.status, 1)
   assert.match(hasil.stderr, /Belum ada hobi/)
 })
+
+test('hapus-kategori: menghapus kategori dari hobi yang punya kategori', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  const hasil = jalankan(folder, 'hapus-kategori', 'Ngoding')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /berhasil dihapus/i)
+
+  const daftar = jalankan(folder, 'daftar-kategori', 'Teknologi')
+  assert.equal(daftar.status, 1)
+})
+
+test('hapus-kategori: nama hobi tidak membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  const hasil = jalankan(folder, 'hapus-kategori', 'nGoDiNg')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Ngoding/)
+})
+
+test('hapus-kategori: menolak hobi yang tidak ditemukan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'hapus-kategori', 'Bersepeda')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /tidak ditemukan/i)
+})
+
+test('hapus-kategori: menolak hobi yang belum punya kategori', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'hapus-kategori', 'Ngoding')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /belum memiliki kategori/i)
+})
+
+test('hapus-kategori: hobi tetap ada di hobi.txt setelah kategori dihapus', (t) => {
+  const folder = siapkanFolder(t)
+  const fileHobi = path.join(folder, 'hobi.txt')
+  const sebelum = fs.readFileSync(fileHobi, 'utf8')
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'hapus-kategori', 'Ngoding')
+
+  assert.equal(fs.readFileSync(fileHobi, 'utf8'), sebelum)
+})
+
+test('hapus-kategori: kategori hobi lain tidak ikut berubah', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'kategori', 'Membaca', 'Santai')
+
+  jalankan(folder, 'hapus-kategori', 'Ngoding')
+
+  const hasil = jalankan(folder, 'daftar-kategori', 'Santai')
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Membaca/)
+})
+
+test('hapus-kategori: menolak jika nama hobi tidak diberikan', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'hapus-kategori')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Gunakan: node cli\/hobi\.js hapus-kategori/)
+})
