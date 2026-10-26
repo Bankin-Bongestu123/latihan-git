@@ -22,7 +22,9 @@ const {
 const { cariNamaHobi } = require('./bantu')
 
 const PERINTAH = {
-  daftar: require('./perintah/daftar')
+  daftar: require('./perintah/daftar'),
+  statistik: require('./perintah/statistik'),
+  impor: require('./perintah/impor')
 }
 
 const [, , perintah, ...sisa] = process.argv
@@ -317,41 +319,6 @@ case 'cari': {
 
       tulis(judul, [])
       console.log('Hobi berhasil dihapus semua')
-      break
-    }
-
-    case 'statistik': {
-      const statistik = hitungStatistik(hobi)
-      console.log(`Total hobi: ${statistik.total}`)
-      console.log(`Hobi unik: ${statistik.unik}`)
-      break
-    }
-
-    case 'impor': {
-      if (!argumen) {
-        throw new Error(
-          'Gunakan: node cli/hobi.js impor <file.json>'
-        )
-      }
-
-      const isiJson = fs.readFileSync(argumen, 'utf8').replace(/^\uFEFF/, '')
-      const data = JSON.parse(isiJson)
-
-            if (!data || !Array.isArray(data.hobi)) {
-        throw new Error(
-          'Format JSON tidak valid: properti hobi harus berupa array'
-        )
-      }
-
-      if (!data.hobi.every(nama => typeof nama === 'string')) {
-        throw new Error(
-          'Format JSON tidak valid: setiap hobi harus berupa teks'
-        )
-      }
-
-      const hasil = gabungkanHobi(hobi, data.hobi)
-      tulis(judul, hasil)
-      console.log(`Impor berhasil. Total hobi sekarang: ${hasil.length}`)
       break
     }
 
