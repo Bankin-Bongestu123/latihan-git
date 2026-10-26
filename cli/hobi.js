@@ -139,6 +139,34 @@ async function main() {
       break
     }
 
+        case 'hapus-kategori': {
+      const namaHobi = argumen.trim()
+
+      if (!namaHobi) {
+        throw new Error(
+          'Gunakan: node cli/hobi.js hapus-kategori <nama-hobi>'
+        )
+      }
+
+      const hobiDitemukan = cariNamaHobi(hobi, namaHobi)
+
+      if (!hobiDitemukan) {
+        throw new Error('Hobi tidak ditemukan')
+      }
+
+      const kategori = bacaKategori()
+
+      if (!kategori[hobiDitemukan]) {
+        throw new Error(`Hobi "${hobiDitemukan}" belum memiliki kategori`)
+      }
+
+      delete kategori[hobiDitemukan]
+      tulisKategori(kategori)
+
+      console.log(`Kategori hobi "${hobiDitemukan}" berhasil dihapus`)
+      break
+    }
+
     case 'tambah':
       tulis(judul, tambahHobi(hobi, argumen))
       console.log('Hobi berhasil ditambahkan')
@@ -261,25 +289,11 @@ case 'cari': {
 
     default:
       gagal(
-'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|daftar-kategori|cari|daftar|urut|ekspor|statistik|impor> [teks]'     )
+'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|cari|daftar|urut|ekspor|statistik|impor> [teks]'     )
       }
   } catch (e) {
     gagal(e.message)
   }
-}
-
-function hapusKategori(daftarHobi, nama) {
-  const hobi = daftarHobi.find(
-    (h) => h.nama.toLowerCase() === nama.trim().toLowerCase()
-  );
-  if (!hobi) {
-    throw new Error(`Hobi "${nama}" tidak ditemukan.`);
-  }
-  if (!hobi.kategori) {
-    throw new Error(`Hobi "${hobi.nama}" belum memiliki kategori.`);
-  }
-  hobi.kategori = "";
-  return hobi;
 }
 
 main()
