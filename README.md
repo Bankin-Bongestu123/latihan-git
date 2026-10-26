@@ -39,6 +39,22 @@ node cli/hobi.js daftar-kategori "Teknologi"
 
 Nama hobi dan kategori dicocokkan tanpa membedakan huruf besar dan kecil. Data kategori disimpan secara terpisah di `kategori.json`.
 
+### Menampilkan semua kategori
+
+```
+node cli/hobi.js semua-kategori
+```
+
+Contoh output:
+
+```
+- Santai: 1 hobi
+- Tanpa Kategori: 1 hobi
+- Teknologi: 2 hobi
+```
+
+Kategori diurutkan alfabetis tanpa membedakan huruf besar dan kecil. Hobi yang belum punya kategori dikelompokkan sebagai berikut "Tanpa Kategori".
+
 ## Format file impor
 
 File JSON harus memiliki properti `hobi` berupa array string.

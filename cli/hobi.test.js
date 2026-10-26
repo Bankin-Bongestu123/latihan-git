@@ -385,3 +385,93 @@ test('kategori: input hobi tidak valid tidak mengubah daftar hobi', (t) => {
   const sesudah = fs.readFileSync(path.join(folder, 'hobi.txt'), 'utf8')
   assert.equal(sesudah, sebelum)
 })
+
+function isiHobi(folder, ...nama) {
+  fs.writeFileSync(
+    path.join(folder, 'hobi.txt'),
+    ['Daftar Hobi', ...nama.map(n => `- ${n}`)].join('\n') + '\n',
+    'utf8'
+  )
+}
+
+test('semua-kategori: menampilkan kategori beserta jumlah hobinya', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'kategori', 'Membaca', 'Santai')
+
+  const hasil = jalankan(folder, 'semua-kategori')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Teknologi: 1 hobi/)
+  assert.match(hasil.stdout, /Santai: 1 hobi/)
+})
+
+test('semua-kategori: urutan alfabetis tanpa membedakan huruf besar dan kecil', (t) => {
+  const folder = siapkanFolder(t)
+  isiHobi(folder, 'Ngoding', 'Membaca', 'Berenang')
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'kategori', 'Membaca', 'santai')
+  jalankan(folder, 'kategori', 'Berenang', 'Olahraga')
+
+  const hasil = jalankan(folder, 'semua-kategori')
+  const keluaran = hasil.stdout
+
+  assert.equal(hasil.status, 0)
+  assert.ok(keluaran.indexOf('Olahraga') < keluaran.indexOf('santai'))
+  assert.ok(keluaran.indexOf('santai') < keluaran.indexOf('Teknologi'))
+})
+
+test('semua-kategori: hobi tanpa kategori masuk Tanpa Kategori', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  const hasil = jalankan(folder, 'semua-kategori')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Tanpa Kategori: 1 hobi/)
+  assert.match(hasil.stdout, /Teknologi: 1 hobi/)
+})
+
+test('semua-kategori: kategori beda huruf besar dan kecil digabung', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'kategori', 'Membaca', 'teknologi')
+
+  const hasil = jalankan(folder, 'semua-kategori')
+  const baris = hasil.stdout.trim().split(/\r?\n/)
+
+  assert.equal(hasil.status, 0)
+  assert.equal(baris.length, 1)
+  assert.match(baris[0], /Teknologi: 2 hobi/)
+})
+
+test('semua-kategori: gagal jika belum ada hobi sama sekali', (t) => {
+  const folder = siapkanFolder(t)
+  isiHobi(folder)
+
+  const hasil = jalankan(folder, 'semua-kategori')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Belum ada hobi/)
+})
+
+test('semua-kategori: tidak mengubah hobi.txt dan kategori.json', (t) => {
+  const folder = siapkanFolder(t)
+  const fileHobi = path.join(folder, 'hobi.txt')
+  const fileKategori = path.join(folder, 'kategori.json')
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+
+  const hobiSebelum = fs.readFileSync(fileHobi, 'utf8')
+  const kategoriSebelum = fs.readFileSync(fileKategori, 'utf8')
+
+  const hasil = jalankan(folder, 'semua-kategori')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(fs.readFileSync(fileHobi, 'utf8'), hobiSebelum)
+  assert.equal(fs.readFileSync(fileKategori, 'utf8'), kategoriSebelum)
+})
