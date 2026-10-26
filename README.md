@@ -48,6 +48,10 @@ node cli/hobi.js urut-minat
 
 Tingkat minat berupa angka 1 sampai 5. `urut-minat` menampilkan hobi dari minat tertinggi.
 
+### Catatan
+
+Data kategori disimpan di berkas kategori.json.
+
 ### Menampilkan semua kategori
 
 ```
