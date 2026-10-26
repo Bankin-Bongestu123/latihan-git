@@ -635,3 +635,79 @@ test('hapus-kategori: menolak jika nama hobi tidak diberikan', (t) => {
   assert.equal(hasil.status, 1)
   assert.match(hasil.stderr, /Gunakan: node cli\/hobi\.js hapus-kategori/)
 })
+
+test('ekspor: menulis hobi ke file JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'ekspor', 'hasil.json')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /berhasil diekspor/i)
+
+  const data = JSON.parse(
+    fs.readFileSync(path.join(folder, 'hasil.json'), 'utf8')
+  )
+  assert.deepEqual(data.hobi, ['Ngoding', 'Membaca'])
+})
+
+test('ekspor: tanpa nama file tetap menampilkan JSON ke layar', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'ekspor')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Ngoding/)
+})
+
+test('ekspor: menolak file yang bukan .json', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'ekspor', 'hasil.txt')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /\.json/)
+  assert.equal(fs.existsSync(path.join(folder, 'hasil.txt')), false)
+})
+
+test('ekspor: menolak menimpa file yang sudah ada', (t) => {
+  const folder = siapkanFolder(t)
+  const berkas = path.join(folder, 'hasil.json')
+  fs.writeFileSync(berkas, 'lama', 'utf8')
+
+  const hasil = jalankan(folder, 'ekspor', 'hasil.json')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /--paksa/)
+  assert.equal(fs.readFileSync(berkas, 'utf8'), 'lama')
+})
+
+test('ekspor: --paksa menimpa file yang sudah ada', (t) => {
+  const folder = siapkanFolder(t)
+  const berkas = path.join(folder, 'hasil.json')
+  fs.writeFileSync(berkas, 'lama', 'utf8')
+
+  const hasil = jalankan(folder, 'ekspor', 'hasil.json', '--paksa')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(fs.readFileSync(berkas, 'utf8')).hobi, [
+    'Ngoding',
+    'Membaca'
+  ])
+})
+
+test('ekspor: tidak mengubah hobi.txt', (t) => {
+  const folder = siapkanFolder(t)
+  const fileHobi = path.join(folder, 'hobi.txt')
+  const sebelum = fs.readFileSync(fileHobi, 'utf8')
+
+  jalankan(folder, 'ekspor', 'hasil.json')
+
+  assert.equal(fs.readFileSync(fileHobi, 'utf8'), sebelum)
+})
+
+test('ekspor: hasil file bisa diimpor kembali', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'ekspor', 'hasil.json')
+
+  const hasil = jalankan(folder, 'impor', 'hasil.json')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Impor berhasil. Total hobi sekarang: 2/)
+})

@@ -334,9 +334,29 @@ case 'cari': {
       console.log('Hobi berhasil diurutkan')
       break
 
-    case 'ekspor':
-      console.log(eksporHobi(judul, hobi))
+        case 'ekspor': {
+      const paksa = sisa.includes('--paksa')
+      const berkas = sisa.filter(a => a !== '--paksa').join(' ').trim()
+
+      if (!berkas) {
+        console.log(eksporHobi(judul, hobi))
+        break
+      }
+
+      if (!berkas.toLowerCase().endsWith('.json')) {
+        throw new Error('File ekspor harus berekstensi .json')
+      }
+
+      if (fs.existsSync(berkas) && !paksa) {
+        throw new Error(
+          `File ${berkas} sudah ada. Gunakan --paksa untuk menimpa`
+        )
+      }
+
+      fs.writeFileSync(berkas, eksporHobi(judul, hobi) + '\n', 'utf8')
+      console.log(`Hobi berhasil diekspor ke ${berkas}`)
       break
+    }
 
         case 'hapus-semua': {
       const jawaban = await konfirmasiHapusSemua()
