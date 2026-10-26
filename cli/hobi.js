@@ -21,6 +21,10 @@ const {
 } = require('./penyimpanan')
 const { cariNamaHobi } = require('./bantu')
 
+const PERINTAH = {
+  daftar: require('./perintah/daftar')
+}
+
 const [, , perintah, ...sisa] = process.argv
 const argumen = sisa.join(' ')
 
@@ -46,6 +50,11 @@ function konfirmasiHapusSemua() {
 async function main() {
   try {
     const { judul, hobi } = baca()
+
+        if (Object.hasOwn(PERINTAH, perintah)) {
+      await PERINTAH[perintah].jalankan({ judul, hobi, sisa, argumen })
+      return
+    }
 
     switch (perintah) {
       
@@ -269,12 +278,7 @@ case 'cari': {
   break
 }
 
-
-    case 'daftar':
-      hobi.forEach(h => console.log(`- ${h}`))
-      break
-
-    case 'urut':
+      case 'urut':
       tulis(judul, urutkanHobi(hobi))
       console.log('Hobi berhasil diurutkan')
       break
