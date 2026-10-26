@@ -72,7 +72,7 @@ Contoh output:
 - Teknologi: 2 hobi
 ```
 
-Kategori diurutkan alfabetis tanpa membedakan huruf besar dan kecil. Hobi yang belum punya kategori dikelompokkan sebagai berikut "Tanpa Kategori".
+Kategori diurutkan alfabetis tanpa membedakan huruf besar dan kecil. Hobi yang belum punya kategori dikelompokkan sebagai "Tanpa Kategori".
 
 ## Format file impor
 
