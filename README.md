@@ -21,6 +21,14 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js ekspor` | Menampilkan daftar hobi dalam format JSON |
 | `node cli/hobi.js statistik` | Menampilkan total dan jumlah hobi unik |
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
+| `node cli/hobi.js edit "Lama" "Baru"` | Mengganti nama hobi |
+| `node cli/hobi.js kategori "Ngoding" "Teknologi"` | Memberi kategori pada hobi |
+| `node cli/hobi.js hapus-kategori "Ngoding"` | Menghapus kategori dari hobi |
+| `node cli/hobi.js daftar-kategori "Teknologi"` | Menampilkan hobi dalam satu kategori |
+| `node cli/hobi.js semua-kategori` | Menampilkan semua kategori beserta jumlah hobi |
+| `node cli/hobi.js minat "Ngoding" 5` | Memberi tingkat minat 1 sampai 5 |
+| `node cli/hobi.js urut-minat` | Mengurutkan hobi dari minat tertinggi |
+| `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
 
 
 ### Kategori Hobi
@@ -35,6 +43,12 @@ Menampilkan semua hobi berdasarkan kategori:
 
 ```bash
 node cli/hobi.js daftar-kategori "Teknologi"
+```
+
+Menghapus kategori dari sebuah hobi (hobinya tetap ada):
+
+```bash
+node cli/hobi.js hapus-kategori "Ngoding"
 ```
 
 Nama hobi dan kategori dicocokkan tanpa membedakan huruf besar dan kecil. Data kategori disimpan secara terpisah di `kategori.json`.
@@ -66,7 +80,7 @@ Contoh output:
 - Teknologi: 2 hobi
 ```
 
-Kategori diurutkan alfabetis tanpa membedakan huruf besar dan kecil. Hobi yang belum punya kategori dikelompokkan sebagai berikut "Tanpa Kategori".
+Kategori diurutkan alfabetis tanpa membedakan huruf besar dan kecil. Hobi yang belum punya kategori dikelompokkan sebagai "Tanpa Kategori".
 
 ## Format file impor
 
