@@ -39,6 +39,10 @@ node cli/hobi.js daftar-kategori "Teknologi"
 
 Nama hobi dan kategori dicocokkan tanpa membedakan huruf besar dan kecil. Data kategori disimpan secara terpisah di `kategori.json`.
 
+### Catatan
+
+Data kategori disimpan di berkas kategori.json.
+
 ### Menampilkan semua kategori
 
 ```
