@@ -108,6 +108,22 @@ npm test
 
 Tes dijalankan otomatis melalui GitHub Actions pada pull request menuju branch `main`.
 
+## Git hook
+
+Aktifkan hook pre-commit sekali setelah clone:
+
+```
+git config core.hooksPath .githooks
+```
+
+Hook menjalankan `git diff --cached --check` dan `npm test` sebelum setiap commit. Commit ditolak jika salah satunya gagal.
+
+`git commit --no-verify` melewati hook. Pakai hanya untuk commit sementara di branch pribadi, misalnya menyimpan pekerjaan setengah jadi sebelum pindah komputer. Jangan dipakai untuk commit yang akan di-merge, karena CI tetap akan menolak test yang gagal.
+
+## Cakupan CI
+
+Test berjalan di Ubuntu dan Windows dengan Node 20 dan 22 pada setiap push dan pull request ke `main`.
+
 ## Format penyimpanan
 
 File `hobi.txt` menyimpan judul pada baris pertama. Setiap hobi ditulis pada baris berikutnya dengan awalan `- `.
