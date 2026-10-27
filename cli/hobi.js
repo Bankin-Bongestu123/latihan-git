@@ -35,6 +35,7 @@ const PERINTAH = {
     minat: require('./perintah/minat'),
   'urut-minat': require('./perintah/urut-minat'),
     ekspor: require('./perintah/ekspor'),
+    'hapus-semua': require('./perintah/hapus-semua'),
   impor: require('./perintah/impor')
 }
 
