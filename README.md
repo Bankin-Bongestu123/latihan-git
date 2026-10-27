@@ -98,6 +98,19 @@ Contoh:
 
 Hobi yang sudah ada tidak akan ditambahkan kembali jika namanya sama tanpa membedakan huruf besar dan kecil. Impor mempertahankan judul yang tersimpan di `hobi.txt`.
 
+## Struktur folder
+
+```
+cli/
+  hobi.js          router: membaca argumen dan meneruskan ke perintah
+  penyimpanan.js   baca dan tulis hobi.txt, kategori.json, minat.json
+  logika.js        fungsi murni untuk daftar hobi
+  bantu.js         fungsi bantu bersama
+  perintah/        satu file per perintah
+```
+
+Menambah perintah baru: buat `cli/perintah/<nama>.js` yang mengekspor `jalankan({ judul, hobi, sisa, argumen })`, lalu daftarkan di `PERINTAH` pada `cli/hobi.js`.
+
 ## Pengujian
 
 Jalankan semua tes dengan:
