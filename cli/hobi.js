@@ -34,6 +34,7 @@ const PERINTAH = {
   'semua-kategori': require('./perintah/semua-kategori'),
     minat: require('./perintah/minat'),
   'urut-minat': require('./perintah/urut-minat'),
+    ekspor: require('./perintah/ekspor'),
   impor: require('./perintah/impor')
 }
 
