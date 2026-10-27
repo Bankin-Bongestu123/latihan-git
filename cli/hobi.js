@@ -28,6 +28,10 @@ const PERINTAH = {
   urut: require('./perintah/urut'),
   daftar: require('./perintah/daftar'),
   statistik: require('./perintah/statistik'),
+    kategori: require('./perintah/kategori'),
+  'daftar-kategori': require('./perintah/daftar-kategori'),
+  'hapus-kategori': require('./perintah/hapus-kategori'),
+  'semua-kategori': require('./perintah/semua-kategori'),
   impor: require('./perintah/impor')
 }
 
