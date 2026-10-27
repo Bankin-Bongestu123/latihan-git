@@ -32,6 +32,8 @@ const PERINTAH = {
   'daftar-kategori': require('./perintah/daftar-kategori'),
   'hapus-kategori': require('./perintah/hapus-kategori'),
   'semua-kategori': require('./perintah/semua-kategori'),
+    minat: require('./perintah/minat'),
+  'urut-minat': require('./perintah/urut-minat'),
   impor: require('./perintah/impor')
 }
 
