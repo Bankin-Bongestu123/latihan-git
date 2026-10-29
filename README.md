@@ -30,8 +30,6 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
 | `node cli/hobi.js ekspor [file.json] [--paksa]` | Menampilkan hobi sebagai JSON, atau menyimpannya ke file |
 
-
-
 ### Kategori Hobi
 
 Memberikan kategori pada hobi yang sudah terdaftar:
