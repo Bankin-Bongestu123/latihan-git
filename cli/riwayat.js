@@ -4,12 +4,18 @@ const {
   FILE,
   FILE_KATEGORI,
   FILE_MINAT,
+  FILE_DATA,
   tulisAtomik
 } = require('./penyimpanan')
 
 const FOLDER = '.riwayat'
 const MAKS = 10
-const BERKAS = { hobi: FILE, kategori: FILE_KATEGORI, minat: FILE_MINAT }
+const BERKAS = {
+  hobi: FILE,
+  kategori: FILE_KATEGORI,
+  minat: FILE_MINAT,
+  data: FILE_DATA
+}
 
 function ambilKeadaan() {
   const keadaan = {}
@@ -70,6 +76,10 @@ function pulihkanTerakhir() {
   const keadaan = JSON.parse(fs.readFileSync(berkasTerakhir, 'utf8'))
 
   for (const [kunci, nama] of Object.entries(BERKAS)) {
+    if (keadaan[kunci] === undefined) {
+      continue
+    }
+
     if (keadaan[kunci] === null) {
       fs.rmSync(nama, { force: true })
     } else {
