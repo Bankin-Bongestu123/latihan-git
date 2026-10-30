@@ -18,7 +18,8 @@ const PERINTAH = {
   'semua-kategori': require('./perintah/semua-kategori'),
   minat: require('./perintah/minat'),
   'urut-minat': require('./perintah/urut-minat'),
-  batal: require('./perintah/batal')
+  batal: require('./perintah/batal'),
+    migrasi: require('./perintah/migrasi')
 }
 
 const MENGUBAH = new Set([
@@ -30,7 +31,8 @@ const MENGUBAH = new Set([
   'impor',
   'kategori',
   'hapus-kategori',
-  'minat'
+  'minat',
+  'migrasi'
 ])
 
 const [, , perintah, ...sisa] = process.argv
@@ -47,7 +49,7 @@ async function main() {
 
     if (!Object.hasOwn(PERINTAH, perintah)) {
       gagal(
-        'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor|batal> [teks]'
+        'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor|batal|migrasi> [teks]'
       )
     }
 
