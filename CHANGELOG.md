@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.1.0 - 2026-10-30
+
+### Daftar perubahan
+
+- #44 refactor: pecah cli/hobi.js menjadi modul per perintah (A1)
+- #46 fix: lacak regresi dengan git bisect (A2)
+- #48 feat: perintah batal (undo) dengan riwayat perubahan (A3)
+- #51 feat: penyimpanan v2 (data.json) dan perintah migrasi (A4)
+- #42 chore: git hook pre-commit dan CI multi-platform (A5)
+- #53 docs: simulasi bencana dan pemulihan dengan reflog (A6)
+
 ## v1.0.0 - 2026-10-26
 
 Rilis pertama aplikasi CLI pengelola hobi.

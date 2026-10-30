@@ -1,0 +1,54 @@
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run tests
+        run: npm test
+
+  release:
+    name: Create GitHub Release
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract release notes
+        run: |
+          awk '
+            /^## v1\.1\.0/ { in_section=1; print; next }
+            /^## v[0-9]/ && in_section { exit }
+            in_section { print }
+          ' CHANGELOG.md > release-notes.md
+
+          test -s release-notes.md
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md
