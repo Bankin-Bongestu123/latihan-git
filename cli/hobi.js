@@ -1,4 +1,5 @@
 const { baca } = require('./penyimpanan')
+const { ambilKeadaan, catatPerubahan } = require('./riwayat')
 
 const PERINTAH = {
   tambah: require('./perintah/tambah'),
@@ -16,8 +17,21 @@ const PERINTAH = {
   'daftar-kategori': require('./perintah/daftar-kategori'),
   'semua-kategori': require('./perintah/semua-kategori'),
   minat: require('./perintah/minat'),
-  'urut-minat': require('./perintah/urut-minat')
+  'urut-minat': require('./perintah/urut-minat'),
+  batal: require('./perintah/batal')
 }
+
+const MENGUBAH = new Set([
+  'tambah',
+  'hapus',
+  'hapus-semua',
+  'edit',
+  'urut',
+  'impor',
+  'kategori',
+  'hapus-kategori',
+  'minat'
+])
 
 const [, , perintah, ...sisa] = process.argv
 const argumen = sisa.join(' ')
@@ -33,11 +47,17 @@ async function main() {
 
     if (!Object.hasOwn(PERINTAH, perintah)) {
       gagal(
-        'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor> [teks]'
+        'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor|batal> [teks]'
       )
     }
 
+    const sebelum = MENGUBAH.has(perintah) ? ambilKeadaan() : null
+
     await PERINTAH[perintah].jalankan({ judul, hobi, sisa, argumen })
+
+    if (sebelum) {
+      catatPerubahan(sebelum)
+    }
   } catch (e) {
     gagal(e.message)
   }

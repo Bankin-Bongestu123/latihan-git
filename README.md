@@ -27,6 +27,7 @@ Jalankan perintah dari direktori utama repository.
 | `node cli/hobi.js semua-kategori` | Menampilkan semua kategori beserta jumlah hobi |
 | `node cli/hobi.js minat "Ngoding" 5` | Memberi tingkat minat 1 sampai 5 |
 | `node cli/hobi.js urut-minat` | Mengurutkan hobi dari minat tertinggi |
+| `node cli/hobi.js batal` | Membatalkan perubahan data terakhir (maksimal 10 langkah) |
 | `node cli/hobi.js impor data-uji/impor.json` | Menggabungkan hobi dari file JSON |
 | `node cli/hobi.js ekspor [file.json] [--paksa]` | Menampilkan hobi sebagai JSON, atau menyimpannya ke file |
 
@@ -95,6 +96,17 @@ Contoh:
 ```
 
 Hobi yang sudah ada tidak akan ditambahkan kembali jika namanya sama tanpa membedakan huruf besar dan kecil. Impor mempertahankan judul yang tersimpan di `hobi.txt`.
+
+### Membatalkan perubahan
+
+```
+node cli/hobi.js tambah "Berenang"
+node cli/hobi.js batal
+```
+
+Setiap perintah yang mengubah data (`tambah`, `hapus`, `hapus-semua`, `edit`, `urut`, `impor`, `kategori`, `hapus-kategori`, `minat`) menyimpan salinan keadaan sebelumnya di folder `.riwayat/`. `batal` mengembalikan keadaan satu langkah sebelumnya, dan dapat dijalankan berulang sampai maksimal 10 langkah. Jika riwayat kosong, `batal` menampilkan pesan error.
+
+Yang dikembalikan hanya `hobi.txt`, `kategori.json`, dan `minat.json`. File hasil `ekspor` dan perubahan manual lewat editor tidak ikut dibatalkan. Folder `.riwayat/` tidak masuk Git.
 
 ## Struktur folder
 

@@ -711,3 +711,191 @@ test('ekspor: hasil file bisa diimpor kembali', (t) => {
   assert.equal(hasil.status, 0)
   assert.match(hasil.stdout, /Impor berhasil. Total hobi sekarang: 2/)
 })
+
+function bacaBerkas(folder, nama) {
+  return fs.readFileSync(path.join(folder, nama), 'utf8')
+}
+
+test('CLI tambah menambahkan hobi baru', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'tambah', 'Berenang')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil ditambahkan/)
+  assert.equal(
+    bacaBerkas(folder, 'hobi.txt'),
+    'Daftar Hobi\n- Ngoding\n- Membaca\n- Berenang\n'
+  )
+})
+
+test('CLI hapus menghapus hobi yang ada', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'hapus', 'Ngoding')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil dihapus/)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), 'Daftar Hobi\n- Membaca\n')
+})
+
+test('CLI urut mengurutkan hobi secara alfabetis', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'urut')
+  const isi = bacaBerkas(folder, 'hobi.txt')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berhasil diurutkan/)
+  assert.ok(isi.indexOf('Membaca') < isi.indexOf('Ngoding'))
+})
+
+test('batal: membatalkan perintah tambah', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'tambah', 'Berenang')
+  assert.notEqual(bacaBerkas(folder, 'hobi.txt'), awal)
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /berhasil dibatalkan/i)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), awal)
+  assert.deepEqual(
+    fs.readdirSync(folder).filter(n => n.endsWith('.tmp')),
+    []
+  )
+})
+
+test('batal: membatalkan perintah hapus', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'hapus', 'Ngoding')
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), awal)
+})
+
+test('batal: membatalkan perintah edit', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'edit', 'Ngoding', 'Belajar Go')
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), awal)
+})
+
+test('batal: membatalkan kategori dan menghapus kategori.json yang baru dibuat', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  assert.equal(fs.existsSync(path.join(folder, 'kategori.json')), true)
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(fs.existsSync(path.join(folder, 'kategori.json')), false)
+})
+
+test('batal: membatalkan hapus-kategori', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  const setelahKategori = bacaBerkas(folder, 'kategori.json')
+
+  jalankan(folder, 'hapus-kategori', 'Ngoding')
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(bacaBerkas(folder, 'kategori.json'), setelahKategori)
+})
+
+test('batal: membatalkan tingkat minat', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'minat', 'Ngoding', '5')
+  assert.equal(fs.existsSync(path.join(folder, 'minat.json')), true)
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(fs.existsSync(path.join(folder, 'minat.json')), false)
+})
+
+test('batal: membatalkan hapus-semua', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = bacaBerkas(folder, 'hobi.txt')
+
+  spawnSync(process.execPath, [CLI, 'hapus-semua'], {
+    cwd: folder,
+    encoding: 'utf8',
+    input: 'y\n'
+  })
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), 'Daftar Hobi\n')
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), awal)
+})
+
+test('batal: bisa dijalankan berulang kali, satu langkah per perintah', (t) => {
+  const folder = siapkanFolder(t)
+  const awal = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'tambah', 'Berenang')
+  const setelahPertama = bacaBerkas(folder, 'hobi.txt')
+  jalankan(folder, 'tambah', 'Memasak')
+
+  jalankan(folder, 'batal')
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), setelahPertama)
+
+  jalankan(folder, 'batal')
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), awal)
+})
+
+test('batal: gagal dengan pesan jelas jika riwayat kosong', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /Tidak ada perubahan yang bisa dibatalkan/)
+})
+
+test('batal: perintah baca-saja dan perintah gagal tidak mencatat riwayat', (t) => {
+  const folder = siapkanFolder(t)
+
+  jalankan(folder, 'daftar')
+  jalankan(folder, 'statistik')
+  jalankan(folder, 'cari', 'Ngo')
+  jalankan(folder, 'kategori', 'Bersepeda', 'Olahraga')
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 1)
+  assert.equal(fs.existsSync(path.join(folder, '.riwayat')), false)
+})
+
+test('batal: riwayat dibatasi 10 langkah', (t) => {
+  const folder = siapkanFolder(t)
+
+  for (let i = 0; i < 12; i++) {
+    const nama = `Hobi ${String.fromCharCode(65 + i)}`
+    assert.equal(jalankan(folder, 'tambah', nama).status, 0)
+  }
+
+  assert.equal(fs.readdirSync(path.join(folder, '.riwayat')).length, 10)
+
+  for (let i = 0; i < 10; i++) {
+    assert.equal(jalankan(folder, 'batal').status, 0)
+  }
+
+  assert.equal(jalankan(folder, 'batal').status, 1)
+
+  const isi = bacaBerkas(folder, 'hobi.txt')
+  assert.match(isi, /Hobi A/)
+  assert.match(isi, /Hobi B/)
+  assert.doesNotMatch(isi, /Hobi C/)
+})

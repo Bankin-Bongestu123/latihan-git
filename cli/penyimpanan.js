@@ -4,6 +4,12 @@ const FILE = 'hobi.txt'
 const FILE_KATEGORI = 'kategori.json'
 const FILE_MINAT = 'minat.json'
 
+function tulisAtomik(berkas, isi) {
+  const sementara = `${berkas}.tmp`
+  fs.writeFileSync(sementara, isi, 'utf8')
+  fs.renameSync(sementara, berkas)
+}
+
 function baca() {
   if (!fs.existsSync(FILE)) {
     throw new Error('File hobi.txt tidak ditemukan')
@@ -24,7 +30,7 @@ function baca() {
 
 function tulis(judul, hobi) {
   const isi = [judul, ...hobi.map(h => `- ${h}`)].join('\n') + '\n'
-  fs.writeFileSync(FILE, isi, 'utf8')
+  tulisAtomik(FILE, isi)
 }
 
 function bacaKategori() {
@@ -36,11 +42,7 @@ function bacaKategori() {
 }
 
 function tulisKategori(data) {
-  fs.writeFileSync(
-    FILE_KATEGORI,
-    JSON.stringify(data, null, 2) + '\n',
-    'utf8'
-  )
+  tulisAtomik(FILE_KATEGORI, JSON.stringify(data, null, 2) + '\n')
 }
 
 function bacaMinat() {
@@ -52,14 +54,14 @@ function bacaMinat() {
 }
 
 function tulisMinat(data) {
-  fs.writeFileSync(
-    FILE_MINAT,
-    JSON.stringify(data, null, 2) + '\n',
-    'utf8'
-  )
+  tulisAtomik(FILE_MINAT, JSON.stringify(data, null, 2) + '\n')
 }
 
 module.exports = {
+  FILE,
+  FILE_KATEGORI,
+  FILE_MINAT,
+  tulisAtomik,
   baca,
   tulis,
   bacaKategori,
