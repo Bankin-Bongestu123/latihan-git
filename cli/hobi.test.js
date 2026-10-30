@@ -899,3 +899,270 @@ test('batal: riwayat dibatasi 10 langkah', (t) => {
   assert.match(isi, /Hobi B/)
   assert.doesNotMatch(isi, /Hobi C/)
 })
+
+function siapkanFolderV2(t, data) {
+  const folder = siapkanFolder(t)
+  fs.rmSync(path.join(folder, 'hobi.txt'))
+  fs.writeFileSync(
+    path.join(folder, 'data.json'),
+    JSON.stringify(
+      data || {
+        judul: 'Daftar Hobi',
+        hobi: ['Ngoding', 'Membaca'],
+        kategori: {},
+        minat: {}
+      },
+      null,
+      2
+    ) + '\n',
+    'utf8'
+  )
+  return folder
+}
+
+function bacaDataJson(folder) {
+  return JSON.parse(fs.readFileSync(path.join(folder, 'data.json'), 'utf8'))
+}
+
+test('v2: daftar membaca hobi dari data.json', (t) => {
+  const folder = siapkanFolderV2(t)
+  const hasil = jalankan(folder, 'daftar')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /- Ngoding/)
+  assert.match(hasil.stdout, /- Membaca/)
+})
+
+test('v2: tambah menulis ke data.json dan tidak membuat hobi.txt', (t) => {
+  const folder = siapkanFolderV2(t)
+  const hasil = jalankan(folder, 'tambah', 'Berenang')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(bacaDataJson(folder).hobi, ['Ngoding', 'Membaca', 'Berenang'])
+  assert.equal(fs.existsSync(path.join(folder, 'hobi.txt')), false)
+})
+
+test('v2: kategori tersimpan di data.json dan bisa dicari', (t) => {
+  const folder = siapkanFolderV2(t)
+  const hasil = jalankan(folder, 'kategori', 'ngoding', 'Teknologi')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(bacaDataJson(folder).kategori, { Ngoding: 'Teknologi' })
+  assert.equal(fs.existsSync(path.join(folder, 'kategori.json')), false)
+
+  const daftar = jalankan(folder, 'daftar-kategori', 'teknologi')
+  assert.equal(daftar.status, 0)
+  assert.match(daftar.stdout, /Ngoding/)
+})
+
+test('v2: minat tersimpan di data.json', (t) => {
+  const folder = siapkanFolderV2(t)
+  const hasil = jalankan(folder, 'minat', 'Ngoding', '4')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(bacaDataJson(folder).minat, { Ngoding: 4 })
+  assert.equal(fs.existsSync(path.join(folder, 'minat.json')), false)
+})
+
+test('v2: menambah hobi mempertahankan kategori dan minat', (t) => {
+  const folder = siapkanFolderV2(t, {
+    judul: 'Daftar Hobi',
+    hobi: ['Ngoding'],
+    kategori: { Ngoding: 'Teknologi' },
+    minat: { Ngoding: 5 }
+  })
+
+  jalankan(folder, 'tambah', 'Berenang')
+  const data = bacaDataJson(folder)
+
+  assert.deepEqual(data.kategori, { Ngoding: 'Teknologi' })
+  assert.deepEqual(data.minat, { Ngoding: 5 })
+})
+
+test('v2: data.json diutamakan jika hobi.txt juga ada', (t) => {
+  const folder = siapkanFolder(t)
+  fs.writeFileSync(
+    path.join(folder, 'data.json'),
+    JSON.stringify({ judul: 'Daftar Hobi', hobi: ['Berenang'] }),
+    'utf8'
+  )
+
+  const hasil = jalankan(folder, 'daftar')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Berenang/)
+  assert.doesNotMatch(hasil.stdout, /Ngoding/)
+})
+
+test('v2: data.json rusak ditolak tanpa mengubah file', (t) => {
+  const folder = siapkanFolder(t)
+  const berkas = path.join(folder, 'data.json')
+  fs.writeFileSync(berkas, '{ rusak', 'utf8')
+
+  const hasil = jalankan(folder, 'tambah', 'Berenang')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /data\.json rusak/)
+  assert.equal(fs.readFileSync(berkas, 'utf8'), '{ rusak')
+})
+
+test('v2: data.json tanpa array hobi ditolak', (t) => {
+  const folder = siapkanFolder(t)
+  fs.writeFileSync(
+    path.join(folder, 'data.json'),
+    JSON.stringify({ hobi: 'Ngoding' }),
+    'utf8'
+  )
+
+  const hasil = jalankan(folder, 'daftar')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /data\.json tidak valid/)
+})
+
+test('migrasi: mengubah file lama menjadi data.json', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'minat', 'Ngoding', '5')
+
+  const hasil = jalankan(folder, 'migrasi')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Migrasi berhasil/)
+  assert.deepEqual(bacaDataJson(folder), {
+    judul: 'Daftar Hobi',
+    hobi: ['Ngoding', 'Membaca'],
+    kategori: { Ngoding: 'Teknologi' },
+    minat: { Ngoding: 5 }
+  })
+})
+
+test('migrasi: menyimpan cadangan dan menghapus file lama', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  const hobiAwal = bacaBerkas(folder, 'hobi.txt')
+  const kategoriAwal = bacaBerkas(folder, 'kategori.json')
+
+  jalankan(folder, 'migrasi')
+
+  assert.equal(bacaBerkas(folder, 'cadangan-v1/hobi.txt'), hobiAwal)
+  assert.equal(bacaBerkas(folder, 'cadangan-v1/kategori.json'), kategoriAwal)
+  assert.equal(fs.existsSync(path.join(folder, 'hobi.txt')), false)
+  assert.equal(fs.existsSync(path.join(folder, 'kategori.json')), false)
+})
+
+test('migrasi: menolak jika data sudah memakai format v2', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'migrasi')
+  const sebelum = bacaBerkas(folder, 'data.json')
+
+  const hasil = jalankan(folder, 'migrasi')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /sudah memakai format v2/)
+  assert.equal(bacaBerkas(folder, 'data.json'), sebelum)
+})
+
+test('migrasi: tanpa kategori.json dan minat.json menghasilkan objek kosong', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'migrasi')
+  const data = bacaDataJson(folder)
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(data.kategori, {})
+  assert.deepEqual(data.minat, {})
+})
+
+test('migrasi: gagal jika hobi.txt tidak ada dan tidak membuat data.json', (t) => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'tes-hobi-'))
+  t.after(() => fs.rmSync(folder, { recursive: true, force: true }))
+
+  const hasil = jalankan(folder, 'migrasi')
+
+  assert.equal(hasil.status, 1)
+  assert.match(hasil.stderr, /hobi\.txt tidak ditemukan/)
+  assert.equal(fs.existsSync(path.join(folder, 'data.json')), false)
+})
+
+test('migrasi: kategori.json rusak menghentikan migrasi tanpa mengubah apa pun', (t) => {
+  const folder = siapkanFolder(t)
+  fs.writeFileSync(path.join(folder, 'kategori.json'), '{ rusak', 'utf8')
+
+  const hasil = jalankan(folder, 'migrasi')
+
+  assert.equal(hasil.status, 1)
+  assert.equal(fs.existsSync(path.join(folder, 'data.json')), false)
+  assert.equal(fs.existsSync(path.join(folder, 'cadangan-v1')), false)
+  assert.equal(fs.existsSync(path.join(folder, 'hobi.txt')), true)
+  assert.equal(bacaBerkas(folder, 'kategori.json'), '{ rusak')
+})
+
+test('migrasi: perintah lain tetap bekerja setelah migrasi', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'migrasi')
+
+  const hasil = jalankan(folder, 'daftar-kategori', 'teknologi')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Ngoding/)
+})
+
+test('batal: membatalkan migrasi dan mengembalikan file lama', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  const hobiAwal = bacaBerkas(folder, 'hobi.txt')
+  const kategoriAwal = bacaBerkas(folder, 'kategori.json')
+
+  jalankan(folder, 'migrasi')
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(fs.existsSync(path.join(folder, 'data.json')), false)
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), hobiAwal)
+  assert.equal(bacaBerkas(folder, 'kategori.json'), kategoriAwal)
+})
+
+test('batal: membatalkan perubahan pada data.json (mode v2)', (t) => {
+  const folder = siapkanFolderV2(t)
+  const awal = bacaBerkas(folder, 'data.json')
+
+  jalankan(folder, 'tambah', 'Berenang')
+  assert.notEqual(bacaBerkas(folder, 'data.json'), awal)
+
+  const hasil = jalankan(folder, 'batal')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(bacaBerkas(folder, 'data.json'), awal)
+})
+
+test('info: menampilkan format v1 dan jumlah hobi', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'info')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Format penyimpanan: v1/)
+  assert.match(hasil.stdout, /Jumlah hobi: 2/)
+})
+
+test('info: menghitung hobi berkategori dan berminat', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'minat', 'Membaca', '3')
+
+  const hasil = jalankan(folder, 'info')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berkategori: 1/)
+  assert.match(hasil.stdout, /Hobi berminat: 1/)
+})
+
+test('info: tidak mengubah hobi.txt dan tidak mencatat riwayat', (t) => {
+  const folder = siapkanFolder(t)
+  const sebelum = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'info')
+
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), sebelum)
+  assert.equal(fs.existsSync(path.join(folder, '.riwayat')), false)
+})
