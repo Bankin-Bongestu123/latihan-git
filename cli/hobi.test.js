@@ -899,3 +899,34 @@ test('batal: riwayat dibatasi 10 langkah', (t) => {
   assert.match(isi, /Hobi B/)
   assert.doesNotMatch(isi, /Hobi C/)
 })
+
+test('info: menampilkan format v1 dan jumlah hobi', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'info')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Format penyimpanan: v1/)
+  assert.match(hasil.stdout, /Jumlah hobi: 2/)
+})
+
+test('info: menghitung hobi berkategori dan berminat', (t) => {
+  const folder = siapkanFolder(t)
+  jalankan(folder, 'kategori', 'Ngoding', 'Teknologi')
+  jalankan(folder, 'minat', 'Membaca', '3')
+
+  const hasil = jalankan(folder, 'info')
+
+  assert.equal(hasil.status, 0)
+  assert.match(hasil.stdout, /Hobi berkategori: 1/)
+  assert.match(hasil.stdout, /Hobi berminat: 1/)
+})
+
+test('info: tidak mengubah hobi.txt dan tidak mencatat riwayat', (t) => {
+  const folder = siapkanFolder(t)
+  const sebelum = bacaBerkas(folder, 'hobi.txt')
+
+  jalankan(folder, 'info')
+
+  assert.equal(bacaBerkas(folder, 'hobi.txt'), sebelum)
+  assert.equal(fs.existsSync(path.join(folder, '.riwayat')), false)
+})
