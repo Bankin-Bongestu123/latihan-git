@@ -1,4 +1,4 @@
-const { baca } = require('./penyimpanan')
+const { baca, denganKunci } = require('./penyimpanan')
 const { ambilKeadaan, catatPerubahan } = require('./riwayat')
 
 const PERINTAH = {
@@ -36,6 +36,8 @@ const MENGUBAH = new Set([
   'migrasi'
 ])
 
+const PERLU_KUNCI = new Set([...MENGUBAH, 'batal'])
+
 const PERINTAH_JSON = new Set([
   'daftar',
   'cari',
@@ -64,32 +66,42 @@ function gagal(pesan) {
 
 async function main() {
   try {
-    const { judul, hobi } = baca()
-
     if (!Object.hasOwn(PERINTAH, perintah)) {
       throw new Error(
         'Penggunaan: node cli/hobi.js <tambah|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|statistik|urut-minat|info> [teks]'
-    )
-  }
-
-    const sebelum = MENGUBAH.has(perintah) ? ambilKeadaan() : null
-
-    const hasil = await PERINTAH[perintah].jalankan({
-      judul,
-      hobi,
-      sisa,
-      argumen,
-      jsonAktif
-    })
-
-    if (jsonAktif && PERINTAH_JSON.has(perintah)) {
-      console.log(JSON.stringify(hasil))
+      )
     }
 
-    if (sebelum) {
-      catatPerubahan(sebelum)
+    const jalankanPerintah = async () => {
+      const { judul, hobi } = baca()
+
+      const sebelum = MENGUBAH.has(perintah)
+        ? ambilKeadaan()
+        : null
+
+      const hasil = await PERINTAH[perintah].jalankan({
+        judul,
+        hobi,
+        sisa,
+        argumen,
+        jsonAktif
+      })
+
+      if (jsonAktif && PERINTAH_JSON.has(perintah)) {
+        console.log(JSON.stringify(hasil))
+      }
+
+      if (sebelum) {
+        catatPerubahan(sebelum)
+      }
     }
-  }   catch (e) {
+
+    if (PERLU_KUNCI.has(perintah)) {
+      await denganKunci(jalankanPerintah)
+    } else {
+      await jalankanPerintah()
+    }
+  } catch (e) {
     gagal(e.message)
   }
 }
