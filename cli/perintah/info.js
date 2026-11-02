@@ -1,15 +1,26 @@
 const fs = require('fs')
 const { bacaKategori, bacaMinat } = require('../penyimpanan')
 
-function jalankan({ hobi }) {
+function jalankan({ hobi, jsonAktif }) {
   const format = fs.existsSync('data.json') ? 'v2 (data.json)' : 'v1 (hobi.txt)'
   const kategori = bacaKategori()
   const minat = bacaMinat()
 
-  console.log(`Format penyimpanan: ${format}`)
-  console.log(`Jumlah hobi: ${hobi.length}`)
-  console.log(`Hobi berkategori: ${hobi.filter(h => kategori[h]).length}`)
-  console.log(`Hobi berminat: ${hobi.filter(h => minat[h]).length}`)
+  const hasil = {
+    format,
+    jumlahHobi: hobi.length,
+    hobiBerkategori: hobi.filter(h => kategori[h]).length,
+    hobiBerminat: hobi.filter(h => minat[h]).length
+  }
+
+  if (jsonAktif) {
+    return hasil
+  }
+
+  console.log(`Format penyimpanan: ${hasil.format}`)
+  console.log(`Jumlah hobi: ${hasil.jumlahHobi}`)
+  console.log(`Hobi berkategori: ${hasil.hobiBerkategori}`)
+  console.log(`Hobi berminat: ${hasil.hobiBerminat}`)
 }
 
 module.exports = { jalankan }
