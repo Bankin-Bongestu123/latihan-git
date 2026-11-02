@@ -1,6 +1,6 @@
 const { bacaKategori } = require('../penyimpanan')
 
-function jalankan({ hobi }) {
+function jalankan({ hobi, jsonAktif }) {
   if (hobi.length === 0) {
     throw new Error('Belum ada hobi')
   }
@@ -20,11 +20,15 @@ function jalankan({ hobi }) {
     }
   })
 
-  Array.from(hitung.values())
-    .sort((a, b) =>
-      a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' })
-    )
-    .forEach(k => console.log(`- ${k.nama}: ${k.jumlah} hobi`))
+    const hasil = Array.from(hitung.values()).sort((a, b) =>
+    a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' })
+  )
+
+  if (jsonAktif) {
+    return hasil
+  }
+
+  hasil.forEach(k => console.log(`- ${k.nama}: ${k.jumlah} hobi`))
 }
 
 module.exports = { jalankan }

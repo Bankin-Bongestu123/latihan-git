@@ -1,6 +1,6 @@
 const { cariHobi } = require('../logika')
 
-function jalankan({ hobi, sisa }) {
+function jalankan({ hobi, sisa, jsonAktif }) {
   const opsi = sisa.filter(arg => arg.startsWith('--'))
   const kata = sisa.filter(arg => !arg.startsWith('--')).join(' ').trim()
 
@@ -28,6 +28,10 @@ function jalankan({ hobi, sisa }) {
     )
   } else {
     hasil = cariHobi(hobi, kata)
+  }
+
+  if (jsonAktif) {
+    return hasil
   }
 
   hasil.forEach(h => console.log(`- ${h}`))

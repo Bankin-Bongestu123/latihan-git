@@ -36,12 +36,30 @@ const MENGUBAH = new Set([
   'migrasi'
 ])
 
-const [, , perintah, ...sisa] = process.argv
+const PERINTAH_JSON = new Set([
+  'daftar',
+  'cari',
+  'statistik',
+  'semua-kategori',
+  'urut-minat',
+  'info'
+])
+
+const argumenCli = process.argv.slice(2)
+const jsonAktif = argumenCli.includes('--json')
+const argumenBersih = argumenCli.filter(arg => arg !== '--json')
+
+const [perintah, ...sisa] = argumenBersih
 const argumen = sisa.join(' ')
 
 function gagal(pesan) {
-  console.error(pesan)
-  process.exit(1)
+  if (jsonAktif) {
+    console.error(JSON.stringify({ error: pesan }))
+  } else {
+    console.error(pesan)
+  }
+
+  process.exitCode = 1
 }
 
 async function main() {
@@ -49,19 +67,29 @@ async function main() {
     const { judul, hobi } = baca()
 
     if (!Object.hasOwn(PERINTAH, perintah)) {
-      gagal(
-        'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|kategori|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|minat|urut-minat|ekspor|statistik|impor|batal|migrasi|info> [teks]'
-      )
-    }
+      throw new Error(
+        'Penggunaan: node cli/hobi.js <tambah|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|statistik|urut-minat|info> [teks]'
+    )
+  }
 
     const sebelum = MENGUBAH.has(perintah) ? ambilKeadaan() : null
 
-    await PERINTAH[perintah].jalankan({ judul, hobi, sisa, argumen })
+    const hasil = await PERINTAH[perintah].jalankan({
+      judul,
+      hobi,
+      sisa,
+      argumen,
+      jsonAktif
+    })
+
+    if (jsonAktif && PERINTAH_JSON.has(perintah)) {
+      console.log(JSON.stringify(hasil))
+    }
 
     if (sebelum) {
       catatPerubahan(sebelum)
     }
-  } catch (e) {
+  }   catch (e) {
     gagal(e.message)
   }
 }

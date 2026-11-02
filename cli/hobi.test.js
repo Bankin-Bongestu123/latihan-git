@@ -1166,3 +1166,144 @@ test('info: tidak mengubah hobi.txt dan tidak mencatat riwayat', (t) => {
   assert.equal(bacaBerkas(folder, 'hobi.txt'), sebelum)
   assert.equal(fs.existsSync(path.join(folder, '.riwayat')), false)
 })
+
+test('CLI daftar --json menghasilkan array JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'daftar', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), ['Ngoding', 'Membaca'])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI statistik --json menghasilkan objek JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'statistik', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), {
+    total: 2,
+    unik: 2
+  })
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI cari --json menghasilkan array JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', '--json', 'ngoding')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), ['Ngoding'])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI cari menerima --json setelah kata pencarian', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', 'ngoding', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), ['Ngoding'])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI semua-kategori --json menghasilkan array JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'semua-kategori', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), [
+    { nama: 'Tanpa Kategori', jumlah: 2 }
+  ])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI urut-minat --json menghasilkan array JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'urut-minat', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), [
+    { nama: 'Membaca', minat: null },
+    { nama: 'Ngoding', minat: null }
+  ])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI info --json menghasilkan objek JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'info', '--json')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), {
+    format: 'v1 (hobi.txt)',
+    jumlahHobi: 2,
+    hobiBerkategori: 0,
+    hobiBerminat: 0
+  })
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI error --json menghasilkan objek error di stderr', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', '--json')
+
+  assert.equal(hasil.status, 1)
+  assert.equal(hasil.stdout, '')
+  assert.deepEqual(JSON.parse(hasil.stderr), {
+    error: 'Teks pencarian tidak boleh kosong'
+  })
+})
+
+test('CLI perintah tidak dikenal --json menghasilkan error JSON', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'perintah-salah', '--json')
+
+  assert.equal(hasil.status, 1)
+  assert.equal(hasil.stdout, '')
+  assert.equal(typeof JSON.parse(hasil.stderr).error, 'string')
+})
+
+test('CLI daftar tanpa --json tetap menggunakan format teks', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'daftar')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(hasil.stdout, '- Ngoding\n- Membaca\n')
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI statistik tanpa --json tetap menggunakan format teks', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'statistik')
+
+  assert.equal(hasil.status, 0)
+  assert.equal(hasil.stdout, 'Total hobi: 2\nHobi unik: 2\n')
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI menerima --json sebelum nama perintah', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, '--json', 'daftar')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), ['Ngoding', 'Membaca'])
+  assert.equal(hasil.stderr, '')
+})
+
+test('CLI error tanpa --json tetap menggunakan format teks', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari')
+
+  assert.equal(hasil.status, 1)
+  assert.equal(hasil.stdout, '')
+  assert.equal(hasil.stderr, 'Teks pencarian tidak boleh kosong\n')
+})
+
+test('CLI cari menerima --exact bersama --json', (t) => {
+  const folder = siapkanFolder(t)
+  const hasil = jalankan(folder, 'cari', '--exact', '--json', 'Ngoding')
+
+  assert.equal(hasil.status, 0)
+  assert.deepEqual(JSON.parse(hasil.stdout), ['Ngoding'])
+  assert.equal(hasil.stderr, '')
+})
