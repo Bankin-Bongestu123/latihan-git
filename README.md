@@ -133,15 +133,46 @@ Tes dijalankan otomatis melalui GitHub Actions pada pull request menuju branch `
 
 ## Git hook
 
-Aktifkan hook pre-commit sekali setelah clone:
+Aktifkan hook sekali setelah clone repository:
 
-```
+\`\`\`bash
 git config core.hooksPath .githooks
-```
+\`\`\`
 
-Hook menjalankan `git diff --cached --check` dan `npm test` sebelum setiap commit. Commit ditolak jika salah satunya gagal.
+Hook yang aktif:
 
-`git commit --no-verify` melewati hook. Pakai hanya untuk commit sementara di branch pribadi, misalnya menyimpan pekerjaan setengah jadi sebelum pindah komputer. Jangan dipakai untuk commit yang akan di-merge, karena CI tetap akan menolak test yang gagal.
+- `pre-commit`: memeriksa whitespace dengan `git diff --cached --check` dan menjalankan `npm test`.
+- `commit-msg`: memvalidasi format pesan commit.
+
+Gunakan format Conventional Commits:
+
+\`\`\`text
+jenis: deskripsi
+\`\`\`
+
+Jenis yang diterima:
+
+- `feat`: menambahkan fitur.
+- `fix`: memperbaiki bug.
+- `docs`: mengubah dokumentasi.
+- `test`: menambah atau mengubah tes.
+- `chore`: pekerjaan pemeliharaan.
+- `refactor`: mengubah struktur kode tanpa mengubah perilaku.
+
+Contoh pesan yang valid:
+
+\`\`\`text
+feat: tambah fitur kategori
+fix: perbaiki validasi input
+docs: perbarui README
+test: tambah pengujian impor
+chore: rapikan konfigurasi
+refactor: pisahkan fungsi penyimpanan
+\`\`\`
+
+Pesan merge, revert, dan fixup otomatis dari Git juga diizinkan.
+
+Commit ditolak jika format pesan tidak sesuai. `git commit --no-verify` dapat melewati hook, tetapi gunakan hanya untuk keperluan sementara di branch pribadi.
 
 ## Cakupan CI
 
