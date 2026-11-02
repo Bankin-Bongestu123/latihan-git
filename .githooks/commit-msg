@@ -1,0 +1,26 @@
+#!/bin/sh
+
+commit_msg_file="$1"
+commit_msg=$(head -n 1 "$commit_msg_file")
+
+# Izinkan pesan merge dan revert bawaan Git.
+case "$commit_msg" in
+  "Merge "*|"Revert "*)
+    exit 0
+    ;;
+esac
+
+# Izinkan pesan fixup! yang dibuat oleh git commit --fixup.
+if printf '%s\n' "$commit_msg" | grep -Eq '^fixup! (feat|fix|docs|test|chore|refactor): .+'; then
+  exit 0
+fi
+
+# Validasi format pesan commit.
+if printf '%s\n' "$commit_msg" | grep -Eq '^(feat|fix|docs|test|chore|refactor): .+'; then
+  exit 0
+fi
+
+echo "Commit ditolak: format pesan harus mengikuti Conventional Commits."
+echo "Format: jenis: deskripsi"
+echo "Jenis yang diterima: feat, fix, docs, test, chore, refactor."
+exit 1
