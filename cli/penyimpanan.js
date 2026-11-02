@@ -5,6 +5,91 @@ const FILE_KATEGORI = 'kategori.json'
 const FILE_MINAT = 'minat.json'
 const FILE_DATA = 'data.json'
 
+const LOCK = `${FILE_DATA}.lock`
+const BATAS_LOCK = 30_000
+const BATAS_TUNGGU = 5_000
+
+async function ambilKunci() {
+  const mulai = Date.now()
+  const token = `${process.pid}-${Date.now()}-${Math.random()}`
+
+  while (Date.now() - mulai < BATAS_TUNGGU) {
+    try {
+      const fd = fs.openSync(LOCK, 'wx')
+      fs.writeFileSync(fd, token, 'utf8')
+
+      return { fd, token }
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        throw error
+      }
+    }
+
+    ambilAlihLock()
+
+    await new Promise(resolve => setTimeout(resolve, 50))
+  }
+
+  throw new Error(
+    'Gagal memperoleh lock: data.json sedang digunakan proses lain (timeout 5 detik)'
+  )
+}
+
+function ambilAlihLock() {
+  try {
+    const status = fs.statSync(LOCK)
+
+    if (Date.now() - status.mtimeMs <= BATAS_LOCK) {
+      return false
+    }
+
+    const lockBasi = `${LOCK}.stale-${process.pid}-${Date.now()}`
+
+    fs.renameSync(LOCK, lockBasi)
+    fs.rmSync(lockBasi, { force: true })
+
+    console.error(
+      'Lock basi ditemukan (lebih dari 30 detik); mengambil alih data.json.lock'
+    )
+
+    return true
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return true
+    }
+
+    throw error
+  }
+}
+
+function lepasKunci(kunci) {
+  try {
+    fs.closeSync(kunci.fd)
+
+    if (fs.existsSync(LOCK)) {
+      const pemilik = fs.readFileSync(LOCK, 'utf8')
+
+      if (pemilik === kunci.token) {
+        fs.unlinkSync(LOCK)
+      }
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error
+    }
+  }
+}
+
+async function denganKunci(callback) {
+  const kunci = await ambilKunci()
+
+  try {
+    return await callback()
+  } finally {
+    lepasKunci(kunci)
+  }
+}
+
 function tulisAtomik(berkas, isi) {
   const sementara = `${berkas}.tmp`
   fs.writeFileSync(sementara, isi, 'utf8')
@@ -138,5 +223,9 @@ module.exports = {
   bacaKategori,
   tulisKategori,
   bacaMinat,
-  tulisMinat
+  tulisMinat,
+  ambilKunci,
+  ambilAlihLock,
+  lepasKunci,
+  denganKunci
 }
