@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0 - 2026-11-03
+
+### Daftar perubahan
+
+- #61 chore: hook commit-msg untuk Conventional Commits (B1)
+- #63 feat: opsi global --json untuk keluaran semua perintah (B2)
+- #65 feat: berkas kunci untuk mencegah penulisan bersamaan (B3)
+- #67 fix: hapus rahasia yang tak sengaja ter-commit dari riwayat (B4)
+- #68 feat: impor dan ekspor format CSV (B5)
+- #69 chore: cakupan test, cache npm, dan Dependabot (B6)
+- #70 chore: rilis v1.2.0 dengan tag bertanda tangan (B7)
+
 ## v1.1.0 - 2026-10-30
 
 ### Daftar perubahan
