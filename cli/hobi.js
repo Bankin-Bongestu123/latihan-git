@@ -20,7 +20,8 @@ const PERINTAH = {
   'urut-minat': require('./perintah/urut-minat'),
   batal: require('./perintah/batal'),
     migrasi: require('./perintah/migrasi'),
-    info: require('./perintah/info')
+    info: require('./perintah/info'),
+    sinkron: require('./perintah/sinkron')
 }
 
 const MENGUBAH = new Set([
@@ -33,7 +34,8 @@ const MENGUBAH = new Set([
   'kategori',
   'hapus-kategori',
   'minat',
-  'migrasi'
+  'migrasi',
+  'sinkron'
 ])
 
 const PERLU_KUNCI = new Set([...MENGUBAH, 'batal'])
@@ -68,8 +70,7 @@ async function main() {
   try {
     if (!Object.hasOwn(PERINTAH, perintah)) {
       throw new Error(
-        'Penggunaan: node cli/hobi.js <tambah|hapus-kategori|daftar-kategori|semua-kategori|cari|daftar|urut|statistik|urut-minat|info> [teks]'
-      )
+'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|edit|cari|daftar|urut|ekspor|statistik|impor|kategori|hapus-kategori|daftar-kategori|semua-kategori|minat|urut-minat|batal|migrasi|info|sinkron> [teks]'      )
     }
 
     const jalankanPerintah = async () => {

@@ -14,7 +14,9 @@ const BERKAS = {
   hobi: FILE,
   kategori: FILE_KATEGORI,
   minat: FILE_MINAT,
-  data: FILE_DATA
+  data: FILE_DATA,
+  basisSinkron: '.sinkron-basis.json'
+
 }
 
 function ambilKeadaan() {
@@ -35,7 +37,7 @@ function daftarRiwayat() {
   }
 
   return fs.readdirSync(FOLDER)
-    .filter(nama => /^\d{6}\.json$/.test(nama))
+.filter(nama => /^\d{6}\.json$/.test(nama))
     .sort()
 }
 
