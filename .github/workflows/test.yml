@@ -1,3 +1,4 @@
+
 name: Test
 
 on:
@@ -17,7 +18,18 @@ jobs:
         node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
       - run: npm test
+
+      - name: Run coverage (Ubuntu + Node 22)
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 22
+        run: |
+          set -o pipefail
+          npm run cakupan 2>&1 | tee coverage.txt
+          cat coverage.txt >> "$GITHUB_STEP_SUMMARY"

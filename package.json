@@ -2,6 +2,7 @@
      "name": "latihan-git",
      "version": "1.1.0",
      "scripts": {
-          "test": "node --test"
+          "test": "node --test",
+          "cakupan": "node --test --experimental-test-coverage --test-coverage-lines=95"
      }
 }
