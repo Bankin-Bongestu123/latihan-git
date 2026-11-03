@@ -106,6 +106,85 @@ function gabungkanHobi(daftar, tambahan) {
   return hasil
 }
 
+function formatKolomCsv(nilai) {
+  const teks = String(nilai ?? '')
+
+  if (/[",\r\n]/.test(teks)) {
+    return `"${teks.replace(/"/g, '""')}"`
+  }
+
+  return teks
+}
+
+function parseCsv(teks) {
+  const baris = []
+  let kolom = ''
+  let dalamKutip = false
+  let setelahKutip = false
+  let dataBaris = []
+  let nomorBaris = 1
+
+  for (let i = 0; i < teks.length; i++) {
+    const karakter = teks[i]
+    const berikutnya = teks[i + 1]
+
+    if (dalamKutip) {
+      if (karakter === '"' && berikutnya === '"') {
+        kolom += '"'
+        i++
+      } else if (karakter === '"') {
+        dalamKutip = false
+        setelahKutip = true
+      } else {
+        kolom += karakter
+        if (karakter === '\n') nomorBaris++
+      }
+    } else if (setelahKutip) {
+      if (karakter === ',') {
+        dataBaris.push(kolom)
+        kolom = ''
+        setelahKutip = false
+      } else if (karakter === '\n') {
+        dataBaris.push(kolom)
+        baris.push(dataBaris)
+        dataBaris = []
+        kolom = ''
+        setelahKutip = false
+        nomorBaris++
+      } else if (karakter !== '\r') {
+        throw new Error(`CSV tidak valid pada baris ${nomorBaris}`)
+      }
+    } else if (karakter === '"') {
+      if (kolom !== '') {
+        throw new Error(`CSV tidak valid pada baris ${nomorBaris}`)
+      }
+      dalamKutip = true
+    } else if (karakter === ',') {
+      dataBaris.push(kolom)
+      kolom = ''
+    } else if (karakter === '\n') {
+      dataBaris.push(kolom)
+      baris.push(dataBaris)
+      dataBaris = []
+      kolom = ''
+      nomorBaris++
+    } else if (karakter !== '\r') {
+      kolom += karakter
+    }
+  }
+
+  if (dalamKutip) {
+    throw new Error(`CSV tidak valid pada baris ${nomorBaris}`)
+  }
+
+  if (kolom !== '' || dataBaris.length > 0) {
+    dataBaris.push(kolom)
+    baris.push(dataBaris)
+  }
+
+  return baris
+}
+
 module.exports = {
   tambahHobi,
   hapusHobi,
@@ -114,5 +193,7 @@ module.exports = {
   urutkanHobi,
   eksporHobi,
   hitungStatistik,
-  gabungkanHobi
+  gabungkanHobi,
+  formatKolomCsv,
+  parseCsv
 }

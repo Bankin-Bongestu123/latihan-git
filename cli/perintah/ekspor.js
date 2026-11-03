@@ -1,5 +1,27 @@
 const fs = require('fs')
-const { eksporHobi } = require('../logika')
+const {
+  eksporHobi,
+  formatKolomCsv
+} = require('../logika')
+const { bacaKategori, bacaMinat } = require('../penyimpanan')
+
+function eksporCsv(hobi) {
+  const kategori = bacaKategori()
+  const minat = bacaMinat()
+
+  const baris = [
+    ['hobi', 'kategori', 'minat'],
+    ...hobi.map(nama => [
+      nama,
+      kategori[nama] ?? '',
+      minat[nama] ?? ''
+    ])
+  ]
+
+  return baris
+    .map(kolom => kolom.map(formatKolomCsv).join(','))
+    .join('\n')
+}
 
 function jalankan({ judul, hobi, sisa }) {
   const paksa = sisa.includes('--paksa')
@@ -10,8 +32,20 @@ function jalankan({ judul, hobi, sisa }) {
     return
   }
 
+  if (berkas.toLowerCase().endsWith('.csv')) {
+    if (fs.existsSync(berkas) && !paksa) {
+      throw new Error(
+        `File ${berkas} sudah ada. Gunakan --paksa untuk menimpa`
+      )
+    }
+
+    fs.writeFileSync(berkas, eksporCsv(hobi) + '\n', 'utf8')
+    console.log(`Hobi berhasil diekspor ke ${berkas}`)
+    return
+  }
+
   if (!berkas.toLowerCase().endsWith('.json')) {
-    throw new Error('File ekspor harus berekstensi .json')
+    throw new Error('File ekspor harus berekstensi .json atau .csv')
   }
 
   if (fs.existsSync(berkas) && !paksa) {
@@ -24,4 +58,4 @@ function jalankan({ judul, hobi, sisa }) {
   console.log(`Hobi berhasil diekspor ke ${berkas}`)
 }
 
-module.exports = { jalankan }
+module.exports = { jalankan, eksporCsv }
