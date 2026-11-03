@@ -7,10 +7,12 @@ const {
   adaV2,
   bacaKategori,
   bacaMinat,
-  tulisData
+  tulisData,
+  tulisAtomik
 } = require('../penyimpanan')
 
 const FOLDER_CADANGAN = 'cadangan-v1'
+const FILE_BASIS = '.sinkron-basis.json'
 
 function jalankan({ judul, hobi }) {
   if (adaV2()) {
@@ -26,6 +28,21 @@ function jalankan({ judul, hobi }) {
   lama.forEach(n => fs.copyFileSync(n, path.join(FOLDER_CADANGAN, n)))
 
   tulisData({ judul, hobi, kategori, minat })
+  const dataMigrasi = {
+  judul,
+  hobi,
+  kategori,
+  minat
+}
+
+tulisData(dataMigrasi)
+
+tulisAtomik(
+  FILE_BASIS,
+  JSON.stringify(dataMigrasi, null, 2) + '\n'
+)
+
+
 
   lama.forEach(n => fs.rmSync(n))
 

@@ -215,6 +215,7 @@ module.exports = {
   FILE_KATEGORI,
   FILE_MINAT,
   FILE_DATA,
+  bacaData,
   tulisAtomik,
   adaV2,
   tulisData,
