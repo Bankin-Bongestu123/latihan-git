@@ -153,3 +153,90 @@ test('gabungkanHobi merapikan spasi pada hobi baru', () => {
     ['Ngoding', 'Main Gitar']
   )
 })
+
+const { formatKolomCsv } = require('./logika')
+
+test('formatKolomCsv mengembalikan teks biasa tanpa tanda kutip', () => {
+  assert.strictEqual(formatKolomCsv('Membaca'), 'Membaca')
+})
+
+test('formatKolomCsv membungkus teks yang mengandung koma', () => {
+  assert.strictEqual(
+    formatKolomCsv('Memasak, membuat kue'),
+    '"Memasak, membuat kue"'
+  )
+})
+
+test('formatKolomCsv menggandakan tanda kutip di dalam teks', () => {
+  assert.strictEqual(
+    formatKolomCsv('Menulis "cerita"'),
+    '"Menulis ""cerita"""'
+  )
+})
+
+test('formatKolomCsv membungkus teks yang mengandung baris baru', () => {
+  assert.strictEqual(
+    formatKolomCsv('Hobi\nBaru'),
+    '"Hobi\nBaru"'
+  )
+})
+
+test('formatKolomCsv menangani nilai kosong', () => {
+  assert.strictEqual(formatKolomCsv(''), '')
+})
+
+const { parseCsv } = require('./logika')
+
+test('parseCsv membaca kolom biasa', () => {
+  assert.deepStrictEqual(
+    parseCsv('Ngoding,Teknologi,5'),
+    [['Ngoding', 'Teknologi', '5']]
+  )
+})
+
+test('parseCsv membaca koma di dalam tanda kutip', () => {
+  assert.deepStrictEqual(
+    parseCsv('"Memasak, membuat kue",Kuliner,4'),
+    [['Memasak, membuat kue', 'Kuliner', '4']]
+  )
+})
+
+test('parseCsv membaca tanda kutip ganda di dalam teks', () => {
+  assert.deepStrictEqual(
+    parseCsv('"Menulis ""cerita""",Kreatif,5'),
+    [['Menulis "cerita"', 'Kreatif', '5']]
+  )
+})
+
+test('parseCsv membaca beberapa baris', () => {
+  assert.deepStrictEqual(
+    parseCsv('Ngoding,Teknologi,5\nMembaca,Literasi,4'),
+    [
+      ['Ngoding', 'Teknologi', '5'],
+      ['Membaca', 'Literasi', '4']
+    ]
+  )
+})
+
+test('parseCsv menolak tanda kutip yang tidak ditutup', () => {
+  assert.throws(
+    () => parseCsv('"Ngoding,Teknologi,5'),
+    /CSV tidak valid pada baris/
+  )
+})
+
+const { eksporCsv } = require('./perintah/ekspor')
+
+test('eksporCsv menghasilkan header yang benar', () => {
+  assert.strictEqual(
+    eksporCsv(['Ngoding']),
+    'hobi,kategori,minat\nNgoding,,'
+  )
+})
+
+test('parseCsv menolak karakter setelah tanda kutip penutup', () => {
+  assert.throws(
+    () => parseCsv('"Ngoding"x,Teknologi,5'),
+    /CSV tidak valid pada baris/
+  )
+})
