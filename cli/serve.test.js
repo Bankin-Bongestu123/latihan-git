@@ -126,6 +126,30 @@ test('HTTP API menjalankan seluruh pengujian', async (t) => {
     assert.equal(response.status, 400)
   })
 
+    await t.test('POST menolak body tanpa field nama', async () => {
+    resetData()
+
+    const response = await kirim(
+      'POST',
+      '/hobi',
+      JSON.stringify({})
+    )
+
+    assert.equal(response.status, 400)
+  })
+
+  await t.test('POST menolak nama yang bukan teks', async () => {
+    resetData()
+
+    const response = await kirim(
+      'POST',
+      '/hobi',
+      JSON.stringify({ nama: 123 })
+    )
+
+    assert.equal(response.status, 400)
+  })
+
   await t.test('8. POST menolak JSON rusak dengan 400', async () => {
     resetData()
     const response = await kirim('POST', '/hobi', '{json-rusak')
