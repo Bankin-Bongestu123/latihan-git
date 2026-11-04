@@ -121,3 +121,38 @@ test('8 proses tambah bersamaan menyimpan semua hobi', async (t) => {
     assert.match(hasil, new RegExp(`Hobi ${i}`))
   }
 })
+
+test('file sementara dibersihkan ketika rename gagal', (t) => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'tes-atomik-'))
+  const target = path.join(folder, 'data.json')
+  const sementara = `${target}.tmp`
+  const renameAsli = fs.renameSync
+
+  t.after(() => {
+    fs.renameSync = renameAsli
+    fs.rmSync(folder, { recursive: true, force: true })
+  })
+
+  fs.renameSync = (sumber, tujuan) => {
+    if (sumber === sementara && tujuan === target) {
+      throw new Error('Simulasi rename gagal')
+    }
+
+    return renameAsli(sumber, tujuan)
+  }
+
+  try {
+    assert.throws(
+      () => penyimpanan.tulisAtomik(target, 'isi data'),
+      /Simulasi rename gagal/
+    )
+
+    assert.equal(
+      fs.existsSync(sementara),
+      false,
+      'File sementara seharusnya sudah dibersihkan'
+    )
+  } finally {
+    fs.renameSync = renameAsli
+  }
+})
