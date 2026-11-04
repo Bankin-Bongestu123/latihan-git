@@ -68,6 +68,11 @@ function gagal(pesan) {
 
 async function main() {
   try {
+        if (perintah === 'serve') {
+      const { jalankanServer } = require('./serve')
+      await jalankanServer(sisa)
+      return
+    }
     if (!Object.hasOwn(PERINTAH, perintah)) {
       throw new Error(
 'Penggunaan: node cli/hobi.js <tambah|hapus|hapus-semua|edit|cari|daftar|urut|ekspor|statistik|impor|kategori|hapus-kategori|daftar-kategori|semua-kategori|minat|urut-minat|batal|migrasi|info|sinkron> [teks]'      )
