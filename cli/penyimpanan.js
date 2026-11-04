@@ -92,8 +92,21 @@ async function denganKunci(callback) {
 
 function tulisAtomik(berkas, isi) {
   const sementara = `${berkas}.tmp`
-  fs.writeFileSync(sementara, isi, 'utf8')
-  fs.renameSync(sementara, berkas)
+
+  try {
+    fs.writeFileSync(sementara, isi, 'utf8')
+    fs.renameSync(sementara, berkas)
+  } catch (error) {
+    try {
+      if (fs.existsSync(sementara)) {
+        fs.unlinkSync(sementara)
+      }
+    } catch {
+      // Pertahankan error asli jika proses pembersihan juga gagal.
+    }
+
+    throw error
+  }
 }
 
 function adaV2() {
